@@ -26,8 +26,55 @@ public class Aldeao extends Thread {
 	}
 
 	public void parar() {
-		this.interrupt();
 		this.setStatus("Parado");
+	}
+	
+	public void cultivar () {
+		while (this.status.equals("Cultivando")) {
+			/*
+			 * 
+			 * 
+			 * 
+			 * 
+			 * 
+			 * 
+			 * 
+			 * 
+			 */
+		}
+	}
+
+	public boolean construir(String qual, Prefeitura prefeitura) {
+		int comida = prefeitura.getComida(), ouro = prefeitura.getOuro();
+		boolean temRecurso = false;
+		switch (qual) {
+		case "Fazenda":
+			if (comida >= 100 && ouro >= 500) {
+				prefeitura.adicionarFazenda(new Fazenda());
+				prefeitura.alterarValorComidaOuro(-100, -500);
+				temRecurso = true;
+			}
+			break;
+		case "Mina de ouro":
+			if (comida >= 1000) {
+				prefeitura.adicionarMinaDeOuro(new MinaDeOuro());
+				prefeitura.alterarValorComidaOuro(-1000, 0);
+				temRecurso = true;
+			}
+			break;
+		case "Templo":
+			if (prefeitura.getTemplo() != null) {
+				if (comida >= 2000 && ouro >= 2000) {
+
+					prefeitura.setTemplo(new Templo());
+					prefeitura.alterarValorComidaOuro(-2000, -2000);
+					temRecurso = true;
+				}
+			}
+		}
+		if (temRecurso)
+			return true;
+		return false;
 	}
 
 	public String getStatus() {

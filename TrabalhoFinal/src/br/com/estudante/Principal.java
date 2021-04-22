@@ -1,5 +1,7 @@
 package br.com.estudante;
 
+// NÃO APAGUE O IMPORT, NÃO REMOVI PORQUE VAMOS USAR DEPOIS, TA COMENTADO NA LINHA 499
+
 import java.awt.Color;
 import java.awt.Dialog.ModalExclusionType;
 import java.awt.FlowLayout;
@@ -58,29 +60,26 @@ public class Principal extends JFrame {
 	private JPanel pnMaravilha;
 	private JLabel lblMaravilha;
 	private JProgressBar pbMaravilha;
-	private int numAldeao;
+	private int numAldeao, numFazenda, numMinaOuro;
 	private Prefeitura prefeitura;
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
 			Principal window = new Principal();
 			window.setVisible(true);
-		
+
 		});
 	}
 
 	public Principal() {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Principal.class.getResource("/tela/img/icone.png")));
 		initialize();
-        String nome = JOptionPane.showInputDialog(null, "Informe seu nome", "Jogador", JOptionPane.QUESTION_MESSAGE);
-		String[] civilizacoes = {"Acádia", "Babilônia", "Helenística", "Mesopotâmica", "Persa", "Sumária"};
-        String civilizacao = (String) JOptionPane.showInputDialog(null, "Escolha sua civilização", "Jogador", JOptionPane.QUESTION_MESSAGE, null, civilizacoes, civilizacoes[0]);
-        this.lblJogador.setText(nome +" - "+ civilizacao);
-        this.prefeitura = new Prefeitura();
-		//********************************************************************
-		//*** Testar - Depois pode apagar ************************************
-		this.testar();
-		//********************************************************************
+		String nome = JOptionPane.showInputDialog(null, "Informe seu nome", "Jogador", JOptionPane.QUESTION_MESSAGE);
+		String[] civilizacoes = { "Acádia", "Babilônia", "Helenística", "Mesopotâmica", "Persa", "Sumária" };
+		String civilizacao = (String) JOptionPane.showInputDialog(null, "Escolha sua civilização", "Jogador",
+				JOptionPane.QUESTION_MESSAGE, null, civilizacoes, civilizacoes[0]);
+		this.lblJogador.setText(nome + " - " + civilizacao);
+		this.iniciar();
 	}
 
 	@SuppressWarnings("serial")
@@ -92,14 +91,14 @@ public class Principal extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.getContentPane().setLayout(null);
 
-		//*** Configuracoes **************************************************
+		// *** Configuracoes **************************************************
 
 		DefaultTableCellRenderer dtcrCentralizado = new DefaultTableCellRenderer();
 		dtcrCentralizado.setHorizontalAlignment(SwingConstants.CENTER);
 
 		DefaultTableCellRenderer dtcrAldeaoAcao = new DefaultTableCellRenderer() {
 			public void setValue(Object valor) {
-				String v=valor.toString();
+				String v = valor.toString();
 				if (v.equals("Parado"))
 					setBackground(Color.WHITE);
 				else if (v.equals("Orando"))
@@ -118,7 +117,7 @@ public class Principal extends JFrame {
 			}
 		};
 
-		//*** Componentes ****************************************************
+		// *** Componentes ****************************************************
 
 		JTabbedPane tpJogo = new JTabbedPane(JTabbedPane.TOP);
 		tpJogo.setBounds(10, 10, 850, 665);
@@ -143,13 +142,15 @@ public class Principal extends JFrame {
 
 		JPanel pnAldeao = new JPanel();
 		pnAldeao.setLayout(null);
-		pnAldeao.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Alde\u00F5es", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnAldeao.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Alde\u00F5es", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnAldeao.setBounds(10, 10, 270, 620);
 		pnTP_Vila.add(pnAldeao);
 
-		String[] colunasAldeoes = {"Nº", "Ação"};
-		this.tmAldeoes = (new DefaultTableModel(null, colunasAldeoes){
-			public boolean isCellEditable(int row, int column){
+		String[] colunasAldeoes = { "Nº", "Ação" };
+		this.tmAldeoes = (new DefaultTableModel(null, colunasAldeoes) {
+			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		});
@@ -211,13 +212,15 @@ public class Principal extends JFrame {
 
 		JPanel pnFazenda = new JPanel();
 		pnFazenda.setLayout(null);
-		pnFazenda.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Fazendas", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnFazenda.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Fazendas",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnFazenda.setBounds(290, 10, 270, 305);
 		pnTP_Vila.add(pnFazenda);
 
-		String[] colunasFazendas = {"Nº", "Aldeões"};
-		this.tmFazendas = (new DefaultTableModel(null, colunasFazendas){
-			public boolean isCellEditable(int row, int column){
+		String[] colunasFazendas = { "Nº", "Aldeões" };
+		this.tmFazendas = (new DefaultTableModel(null, colunasFazendas) {
+			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		});
@@ -238,16 +241,18 @@ public class Principal extends JFrame {
 
 		JPanel pnMinaOuro = new JPanel();
 		pnMinaOuro.setLayout(null);
-		pnMinaOuro.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Minas de ouro", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnMinaOuro.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Minas de ouro", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnMinaOuro.setBounds(290, 325, 270, 305);
 		pnTP_Vila.add(pnMinaOuro);
 
-		String[] colunasMinas = {"Nº", "Aldeões"};
-		this.tmMinasOuro = (new DefaultTableModel(null, colunasMinas){
-			public boolean isCellEditable(int row, int column){
+		String[] colunasMinas = { "Nº", "Aldeões" };
+		this.tmMinasOuro = (new DefaultTableModel(null, colunasMinas) {
+			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
-		});		
+		});
 
 		this.tblMinasOuro = new JTable(this.tmMinasOuro);
 		this.tblMinasOuro.setRowSelectionAllowed(false);
@@ -265,7 +270,9 @@ public class Principal extends JFrame {
 
 		JPanel pnPrefeitura = new JPanel();
 		pnPrefeitura.setLayout(null);
-		pnPrefeitura.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Prefeitura", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnPrefeitura.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Prefeitura", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnPrefeitura.setBounds(570, 10, 270, 175);
 		pnTP_Vila.add(pnPrefeitura);
 
@@ -311,14 +318,18 @@ public class Principal extends JFrame {
 
 		this.pnTemplo = new JPanel();
 		this.pnTemplo.setLayout(null);
-		this.pnTemplo.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Templo", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnTemplo.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Templo",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnTemplo.setBounds(570, 195, 270, 225);
 		this.pnTemplo.setEnabled(false);
 		pnTP_Vila.add(this.pnTemplo);
 
 		this.pnOferenda = new JPanel();
 		((FlowLayout) this.pnOferenda.getLayout()).setAlignment(FlowLayout.LEFT);
-		this.pnOferenda.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Oferendas de fé", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnOferenda.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Oferendas de fé", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnOferenda.setBounds(8, 15, 255, 45);
 		this.pnOferenda.setEnabled(false);
 		this.pnTemplo.add(this.pnOferenda);
@@ -367,7 +378,9 @@ public class Principal extends JFrame {
 
 		this.pnMaravilha = new JPanel();
 		this.pnMaravilha.setLayout(null);
-		this.pnMaravilha.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Maravilha", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnMaravilha.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Maravilha",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnMaravilha.setBounds(570, 430, 270, 200);
 		this.pnMaravilha.setEnabled(false);
 		pnTP_Vila.add(this.pnMaravilha);
@@ -388,7 +401,7 @@ public class Principal extends JFrame {
 
 		tpJogo.setSelectedIndex(1);
 
-		//*** Eventos ********************************************************
+		// *** Eventos ********************************************************
 
 		btnAldeaoParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -428,7 +441,7 @@ public class Principal extends JFrame {
 
 		btnPrefeituraCriarAldeao.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				comandoPrefeituraCriarAldeao();				
+				comandoPrefeituraCriarAldeao();
 			}
 		});
 
@@ -452,38 +465,48 @@ public class Principal extends JFrame {
 
 	}
 
-	//************************************************************************
-	//*** Testar - Depois pode apagar ****************************************
-	//************************************************************************
-	public void testar() {
-		for (int i=0; i < 5; i++) {
-			this.comandoPrefeituraCriarAldeao();
-		}
-		//this.mostrarAldeao(1, "continua fazendo nada");
-		this.adicionarFazenda("1", "aaaa");
-		this.mostrarFazenda(1, "bbbb");
-		this.mostrarComida(this.prefeitura.getComida());
-		this.adicionarMinaOuro("1", "cccc");
-		this.mostrarMinaOuro(1, "dddd");
-		this.mostrarOuro(this.prefeitura.getOuro());
-		this.mostrarOferendaFe(333);
+	// ************************************************************************
+	// *** Iniciar ************************************************************
+	// ************************************************************************
+	public void iniciar() {
+		// Cria a prefeitura
+		this.prefeitura = new Prefeitura();
 		this.mostrarPrefeitura("eeee", Color.ORANGE);
-		this.habilitarTemplo();
-		this.habilitarMaravilha();
-		this.mostrarMaravilha(444);
-		List<String> evolucoes = new ArrayList<String>();
-		evolucoes.add("NUVEM_GAFANHOTOS");
-		evolucoes.add("MORTE_PRIMOGENITOS");
-		evolucoes.add("CHUVA_PEDRAS"); 
-		this.mostrarAtaques(evolucoes);
-		this.mostrarTemplo("ffff", Color.MAGENTA);
+		// Cria os aldeões iniciais
+		for (int i = 0; i < 5; i++) {
+			this.prefeitura.adicionarAldeao(new Aldeao(numAldeao));
+			this.adicionarAldeao(Integer.toString(numAldeao));
+			this.mostrarAldeao(i);
+			numAldeao++;
+		}
+		// Cria a 1ª fazenda
+		this.prefeitura.adicionarFazenda(new Fazenda());
+		this.adicionarFazenda("0", "aaaa");
+		this.mostrarFazenda(0, "aaaa");
+		numFazenda++;
+		// Mostrar ouro, comida e oferendas iniciais
+		this.mostrarComida(this.prefeitura.getComida());
+		this.mostrarOuro(this.prefeitura.getOuro());
+		this.mostrarOferendaFe(0);
+		// Cria a 1ª mina
+		this.prefeitura.adicionarMinaDeOuro(new MinaDeOuro());
+		this.adicionarMinaOuro("0", "bbbb");
+		this.mostrarMinaOuro(0, "bbbb");
+		numMinaOuro++;
+
+		/*
+		 * this.habilitarTemplo(); this.habilitarMaravilha();
+		 * this.mostrarMaravilha(444); List<String> evolucoes = new ArrayList<String>();
+		 * evolucoes.add("NUVEM_GAFANHOTOS"); evolucoes.add("MORTE_PRIMOGENITOS");
+		 * evolucoes.add("CHUVA_PEDRAS"); this.mostrarAtaques(evolucoes);
+		 */
 
 	}
-	//************************************************************************
-	//************************************************************************
-	//************************************************************************
+	// ************************************************************************
+	// ************************************************************************
+	// ************************************************************************
 
-	//*** Entrada=Apresentação - altera valores dos componentes **************
+	// *** Entrada=Apresentação - altera valores dos componentes **************
 
 	public void mostrarMensagemErro(String titulo, String mensagem) {
 		JOptionPane.showMessageDialog(null, mensagem, titulo, JOptionPane.ERROR_MESSAGE);
@@ -491,7 +514,7 @@ public class Principal extends JFrame {
 
 	public void adicionarAldeao(String numero) {
 		int num = Integer.valueOf(numero);
-		String[] linha = {numero, this.prefeitura.getAldeao(num).getStatus()};
+		String[] linha = { Integer.toString(num + 1), this.prefeitura.getAldeao(num).getStatus() };
 		this.tmAldeoes.addRow(linha);
 	}
 
@@ -501,13 +524,14 @@ public class Principal extends JFrame {
 	}
 
 	public void adicionarFazenda(String numero, String aldeoes) {
-		String[] linha = {numero, aldeoes};
+		int num = Integer.valueOf(numero);
+		String[] linha = { Integer.toString(num + 1), aldeoes };
 		this.tmFazendas.addRow(linha);
 		this.cbFazenda.addItem(numero);
 	}
 
 	public void mostrarFazenda(int fazenda, String aldeoes) {
-		this.tblFazendas.setValueAt(aldeoes, fazenda-1, 1);
+		this.tblFazendas.setValueAt(aldeoes, fazenda, 1);
 	}
 
 	public void mostrarComida(int qtd) {
@@ -515,13 +539,14 @@ public class Principal extends JFrame {
 	}
 
 	public void adicionarMinaOuro(String numero, String aldeoes) {
-		String[] linha = {numero, aldeoes};
+		int num = Integer.valueOf(numero);
+		String[] linha = { Integer.toString(num + 1), aldeoes };
 		this.tmMinasOuro.addRow(linha);
 		this.cbMinaOuro.addItem(numero);
 	}
 
 	public void mostrarMinaOuro(int minaOuro, String aldeoes) {
-		this.tblMinasOuro.setValueAt(aldeoes, minaOuro-1, 1);
+		this.tblMinasOuro.setValueAt(aldeoes, minaOuro, 1);
 	}
 
 	public void mostrarOuro(int qtd) {
@@ -562,9 +587,14 @@ public class Principal extends JFrame {
 		this.cbTemploLancamentos.removeAllItems();
 		for (String evolucao : evolucoes) {
 			switch (evolucao) {
-			case "NUVEM_GAFANHOTOS":	this.cbTemploLancamentos.addItem("Nuvem de gafanhotos");	break;
-			case "MORTE_PRIMOGENITOS":	this.cbTemploLancamentos.addItem("Morte dos primogênitos");	break;
-			case "CHUVA_PEDRAS": 		this.cbTemploLancamentos.addItem("Chuva de pedras");
+			case "NUVEM_GAFANHOTOS":
+				this.cbTemploLancamentos.addItem("Nuvem de gafanhotos");
+				break;
+			case "MORTE_PRIMOGENITOS":
+				this.cbTemploLancamentos.addItem("Morte dos primogênitos");
+				break;
+			case "CHUVA_PEDRAS":
+				this.cbTemploLancamentos.addItem("Chuva de pedras");
 			}
 		}
 	}
@@ -574,7 +604,7 @@ public class Principal extends JFrame {
 		this.tfTemplo.setBackground(cor);
 	}
 
-	//*** Saída=Ações/comandos - informa ação do usuário *********************
+	// *** Saída=Ações/comandos - informa ação do usuário *********************
 
 	public void comandoAldeaoParar(int aldeao) {
 		if (aldeao == -1)
@@ -586,10 +616,67 @@ public class Principal extends JFrame {
 	}
 
 	public void comandoAldeaoConstruir(int aldeao, String qual) {
+		int ouro = prefeitura.getOuro(), comida = prefeitura.getComida();
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
-		else
-			System.out.println("comandoAldeaoConstruir(aldeao, qual);");
+		else {
+			Aldeao aldeaoSelecionado = this.prefeitura.getAldeao(aldeao);
+			boolean criou = aldeaoSelecionado.construir(qual, this.prefeitura);
+			switch (qual) {
+			case "Fazenda":
+				if (criou) {
+					this.adicionarFazenda(Integer.toString(numFazenda), "aaaa");
+					this.mostrarFazenda(numFazenda, " ");
+					numFazenda++;
+				} else {
+					String msg = "";
+					if (comida < 100)
+						msg += (100 - comida) + " de comida";
+					if (ouro < 500) {
+						if (!msg.equals("")) {
+							msg += " e ";
+						}
+						msg += "" + (500 - ouro) + " de ouro";
+					}
+
+					this.mostrarMensagemErro("Recursos insuficientes", "Faltou: " + msg);
+				}
+				break;
+			case "Mina de ouro":
+				if (criou) {
+					this.adicionarMinaOuro(Integer.toString(numMinaOuro), "bbbb");
+					this.mostrarMinaOuro(numMinaOuro, " ");
+					numMinaOuro++;
+				} else
+					this.mostrarMensagemErro("Recursos insuficientes", "Faltou: " + (1000 - comida) + " de comida");
+				break;
+			case "Templo":
+				if (criou) {
+					this.mostrarTemplo("Templo", Color.MAGENTA);
+					this.habilitarTemplo();
+				} else {
+					String msg = "";
+					if (this.prefeitura.getTemplo() == null) {
+						if (comida < 2000)
+							msg += (2000 - comida) + " de comida";
+						if (ouro < 2000) {
+							if (!msg.equals("")) {
+								msg += " e ";
+							}
+							msg += "" + (2000 - ouro) + " de ouro";
+
+						}
+						this.mostrarMensagemErro("Recursos insuficientes", "Faltou: " + msg);
+					} else {
+						this.mostrarMensagemErro("Limite da construção", "Sua vila já possui um templo!");
+					}
+
+				}
+
+			}
+			this.mostrarComida(this.prefeitura.getComida());
+			this.mostrarOuro(this.prefeitura.getOuro());
+		}
 	}
 
 	public void comandoAldeaoCultivar(int aldeao, int numeroFazenda) {
@@ -621,15 +708,18 @@ public class Principal extends JFrame {
 	}
 
 	public void comandoPrefeituraCriarAldeao() {
-		if (this.prefeitura.getComida() >= 100) {
-			Aldeao aldeao = new Aldeao(numAldeao);
+		int comida = this.prefeitura.getComida();
+		if (comida >= 150) {
+			this.prefeitura.setComida(comida - 150);
+			Aldeao aldeao = new Aldeao(numAldeao + 1);
 			this.prefeitura.adicionarAldeao(aldeao);
-			this.adicionarAldeao(Integer.toString(numAldeao));
+			this.adicionarAldeao(Integer.toString(numAldeao + 1));
+			this.mostrarComida(this.prefeitura.getComida());
 			numAldeao++;
 		} else {
-			this.mostrarMensagemErro("Comida insuficiente", "A prefeitura precisa de mais comida para cirar o aldeão");
+			this.mostrarMensagemErro("Comida insuficiente", "A prefeitura precisa de mais comida para criar o aldeão");
 		}
-		
+
 	}
 
 	public void comandoPrefeituraEvoluir(String strEvolucao) {
