@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <dirs>
     <entry loc="/Users/viniciusaraujo/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.macosx.x86_64_15.0.2.v20210201-0955" stamp="1617969775567"/>
+    <entry loc="/Users/gabrielsouza/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.macosx.x86_64_15.0.2.v20210201-0955" stamp="1614892223147"/>
     <entry loc="/Users/viniciusaraujo/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.macosx.x86_64_15.0.2.v20210201-0955/jre" stamp="1617969775566"/>
+    <entry loc="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home" stamp="1607518563000"/>
     <entry loc="/Library/Java/JavaVirtualMachines/jdk-15.0.2.jdk/Contents/Home" stamp="1607372989000"/>
+    <entry loc="/Users/gabrielsouza/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.macosx.x86_64_15.0.2.v20210201-0955/jre" stamp="1614892223146"/>
 </dirs>
