@@ -1,11 +1,15 @@
 package br.com.estudante;
 
 public class Aldeao extends Thread {
-	private int num;
-	private String status = "Parado";
+	private int num, qtdComida, qtdOuro, numFazenda, numMinaOuro;
+	private Prefeitura prefeitura;
+	private String status;
 
-	Aldeao(int num) {
+	Aldeao(int num, Prefeitura prefeitura) {
 		this.setNum(num);
+		this.prefeitura = prefeitura;
+		this.setName(Integer.toString(num));
+		this.parar();
 	}
 
 	public int getNum() {
@@ -19,38 +23,66 @@ public class Aldeao extends Thread {
 			System.out.println("Número inserido é inválido");
 	}
 
+	public Prefeitura getPrefeitura() {
+		return prefeitura;
+	}
+
+	public void setPrefeitura(Prefeitura prefeitura) {
+		if (this.prefeitura != null)
+			this.prefeitura = prefeitura;
+		else
+			System.out.println("Prefeitura inserida é inválida");
+	}
+
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-
+		while (!this.status.equals("Sacrificado")) {
+			switch (this.status) {
+			case "Cultivando":
+				this.cultivar();
+				break;
+			case "Minerando":
+				this.minerar();
+				break;
+			case "Construindo":
+				this.construir(status);
+			}
+		}
 	}
 
 	public void parar() {
 		this.setStatus("Parado");
+		this.setNumFazenda(-1);
 	}
-	
-	public void cultivar () {
+
+	public void cultivar() {
 		while (this.status.equals("Cultivando")) {
-			/*
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 * 
-			 */
+			try {
+				Thread.sleep(1000);
+				this.setQtdComida(5);
+				Thread.sleep(1500);
+				this.prefeitura.setComida(this.qtdComida);
+				this.qtdComida = 0;
+			} catch (InterruptedException e) {
+
+			}
+
 		}
 	}
 
-	public boolean construir(String qual, Prefeitura prefeitura) {
+	public void minerar() {
+		while (this.status.equals("Cultivando")) {
+
+		}
+	}
+
+	public boolean construir(String qual) {
 		int comida = prefeitura.getComida(), ouro = prefeitura.getOuro();
 		boolean temRecurso = false;
 		switch (qual) {
 		case "Fazenda":
 			if (comida >= 100 && ouro >= 500) {
-				prefeitura.adicionarFazenda(new Fazenda());
+				prefeitura.adicionarFazenda(new Fazenda(this.prefeitura.getPrincipal().numFazenda, this.prefeitura));
 				prefeitura.alterarValorComidaOuro(-100, -500);
 				temRecurso = true;
 			}
@@ -83,6 +115,31 @@ public class Aldeao extends Thread {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public int getQtdComida() {
+		return qtdComida;
+	}
+
+	public void setQtdComida(int qtdComida) {
+		this.qtdComida = qtdComida;
+
+	}
+
+	public int getQtdOuro() {
+		return qtdOuro;
+	}
+
+	public void setQtdOuro(int qtdOuro) {
+		this.qtdOuro = qtdOuro;
+	}
+
+	public int getNumFazenda() {
+		return numFazenda;
+	}
+
+	public void setNumFazenda(int numFazenda) {
+		this.numFazenda = numFazenda;
 	}
 
 }

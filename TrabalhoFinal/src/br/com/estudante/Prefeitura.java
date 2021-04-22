@@ -2,18 +2,32 @@ package br.com.estudante;
 
 import java.util.ArrayList;
 
-public class Prefeitura {
+public class Prefeitura extends Thread {
 	private ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
 	private ArrayList<Fazenda> fazendas = new ArrayList<Fazenda>();
 	private ArrayList<MinaDeOuro> minasDeOuro = new ArrayList<MinaDeOuro>();
+	private Principal principal;
 	private Templo templo = null;
 	private int ouro = 10000;
 	private int comida = 15000;
 
+	Prefeitura(Principal principal) {
+		this.setPrincipal(principal);
+	}
+
+	@Override
+	public void run() {
+		while (true) {
+			principal.mostrarOuro(ouro);
+			principal.mostrarComida(comida);
+		}
+	}
+
 	public void adicionarAldeao(Aldeao aldeao) {
-		if (aldeao != null)
+		if (aldeao != null) {
 			this.aldeoes.add(aldeao);
-		else
+			aldeao.start();
+		} else
 			System.out.println("Aldeão inválido");
 	}
 
@@ -28,9 +42,11 @@ public class Prefeitura {
 	}
 
 	public void adicionarFazenda(Fazenda fazenda) {
-		if (fazenda != null)
+		if (fazenda != null) {
 			this.fazendas.add(fazenda);
-		else
+			fazenda.setName(Integer.toString(fazenda.getNum()));
+			fazenda.start();
+		} else
 			System.out.println("Aldeão inválido");
 	}
 
@@ -40,9 +56,10 @@ public class Prefeitura {
 	}
 
 	public void adicionarMinaDeOuro(MinaDeOuro minaDeOuro) {
-		if (minaDeOuro != null)
+		if (minaDeOuro != null) {
 			this.minasDeOuro.add(minaDeOuro);
-		else
+			minaDeOuro.start();
+		} else
 			System.out.println("Mina de Ouro inválida");
 	}
 
@@ -56,7 +73,7 @@ public class Prefeitura {
 	}
 
 	public void setOuro(int ouro) {
-		this.ouro = ouro;
+		this.ouro += ouro;
 	}
 
 	public int getComida() {
@@ -64,7 +81,8 @@ public class Prefeitura {
 	}
 
 	public void setComida(int comida) {
-		this.comida = comida;
+		this.comida += comida;
+		System.out.println("Chegou "+this.comida);
 	}
 
 	public Templo getTemplo() {
@@ -73,6 +91,14 @@ public class Prefeitura {
 
 	public void setTemplo(Templo templo) {
 		this.templo = templo;
+	}
+
+	public Principal getPrincipal() {
+		return principal;
+	}
+
+	public void setPrincipal(Principal principal) {
+		this.principal = principal;
 	}
 
 }

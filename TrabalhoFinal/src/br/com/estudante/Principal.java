@@ -60,7 +60,7 @@ public class Principal extends JFrame {
 	private JPanel pnMaravilha;
 	private JLabel lblMaravilha;
 	private JProgressBar pbMaravilha;
-	private int numAldeao, numFazenda, numMinaOuro;
+	int numAldeao, numFazenda, numMinaOuro;
 	private Prefeitura prefeitura;
 
 	public static void main(String[] args) {
@@ -470,17 +470,18 @@ public class Principal extends JFrame {
 	// ************************************************************************
 	public void iniciar() {
 		// Cria a prefeitura
-		this.prefeitura = new Prefeitura();
+		this.prefeitura = new Prefeitura(this);
+		this.prefeitura.start();
 		this.mostrarPrefeitura("eeee", Color.ORANGE);
 		// Cria os aldeões iniciais
 		for (int i = 0; i < 5; i++) {
-			this.prefeitura.adicionarAldeao(new Aldeao(numAldeao));
+			this.prefeitura.adicionarAldeao(new Aldeao(numAldeao, this.prefeitura));
 			this.adicionarAldeao(Integer.toString(numAldeao));
 			this.mostrarAldeao(i);
 			numAldeao++;
 		}
 		// Cria a 1ª fazenda
-		this.prefeitura.adicionarFazenda(new Fazenda());
+		this.prefeitura.adicionarFazenda(new Fazenda(numFazenda, this.prefeitura));
 		this.adicionarFazenda("0", "aaaa");
 		this.mostrarFazenda(0, "aaaa");
 		numFazenda++;
@@ -611,6 +612,12 @@ public class Principal extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao aldeaoSelecionado = this.prefeitura.getAldeao(aldeao);
+			if (aldeaoSelecionado.getNumFazenda() != -1) {
+				Fazenda fazenda = this.prefeitura.getFazenda(aldeaoSelecionado.getNumFazenda());
+				fazenda.removeFazendeiro(aldeaoSelecionado);
+				System.out.println("Status do aldeão: "+aldeaoSelecionado.getStatus());
+				this.mostrarAldeao(aldeao);
+			}
 			aldeaoSelecionado.parar();
 		}
 	}
@@ -621,7 +628,7 @@ public class Principal extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao aldeaoSelecionado = this.prefeitura.getAldeao(aldeao);
-			boolean criou = aldeaoSelecionado.construir(qual, this.prefeitura);
+			boolean criou = aldeaoSelecionado.construir(qual);
 			switch (qual) {
 			case "Fazenda":
 				if (criou) {
@@ -638,7 +645,6 @@ public class Principal extends JFrame {
 						}
 						msg += "" + (500 - ouro) + " de ouro";
 					}
-
 					this.mostrarMensagemErro("Recursos insuficientes", "Faltou: " + msg);
 				}
 				break;
@@ -682,8 +688,14 @@ public class Principal extends JFrame {
 	public void comandoAldeaoCultivar(int aldeao, int numeroFazenda) {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
-		else
-			System.out.println("comandoAldeaoCultivar(aldeao, numeroFazenda);");
+		else {
+			System.out.println("Aldeão: " + this.prefeitura.getAldeao(aldeao).getName() + "Fazenda: "
+					+ this.prefeitura.getFazenda(numeroFazenda).getName());
+			Aldeao aldeaoSelecionado = this.prefeitura.getAldeao(aldeao);
+			this.prefeitura.getFazenda(numeroFazenda).adicionarFazendeiro(aldeaoSelecionado);
+
+		}
+
 	}
 
 	public void comandoAldeaoMinerar(int aldeao, int numeroMinaOuro) {
@@ -710,10 +722,10 @@ public class Principal extends JFrame {
 	public void comandoPrefeituraCriarAldeao() {
 		int comida = this.prefeitura.getComida();
 		if (comida >= 150) {
-			this.prefeitura.setComida(comida - 150);
-			Aldeao aldeao = new Aldeao(numAldeao + 1);
+			this.prefeitura.setComida(-150);
+			Aldeao aldeao = new Aldeao(numAldeao, this.prefeitura);
 			this.prefeitura.adicionarAldeao(aldeao);
-			this.adicionarAldeao(Integer.toString(numAldeao + 1));
+			this.adicionarAldeao(Integer.toString(numAldeao));
 			this.mostrarComida(this.prefeitura.getComida());
 			numAldeao++;
 		} else {
