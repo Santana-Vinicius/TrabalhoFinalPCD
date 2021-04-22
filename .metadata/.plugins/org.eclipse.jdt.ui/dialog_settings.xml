@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
+<<<<<<< HEAD
 	<item key="org.eclipse.jdt.ui.last.selected.jre.kind2" value="2"/>
 	<item key="org.eclipse.jdt.ui.last.selected.execution.enviroment" value="JavaSE-15"/>
 	<section name="JavaElementSearchActions">
@@ -14,11 +15,17 @@
 		<item key="create_constructor" value="false"/>
 		<item key="create_unimplemented" value="true"/>
 	</section>
+=======
+>>>>>>> 5fb0545643e9d8e580bb77087c2c3e334a2a9ebe
 	<section name="completion_proposal_size">
 	</section>
 	<section name="quick_assist_proposal_size">
 	</section>
+<<<<<<< HEAD
 	<section name="BuildPathsPropertyPage">
 		<item key="pageIndex" value="3"/>
+=======
+	<section name="JavaElementSearchActions">
+>>>>>>> 5fb0545643e9d8e580bb77087c2c3e334a2a9ebe
 	</section>
 </section>
