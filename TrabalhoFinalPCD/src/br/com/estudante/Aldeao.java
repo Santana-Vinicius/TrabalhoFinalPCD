@@ -5,25 +5,15 @@ public class Aldeao extends Thread {
 	private Enum<Status> status;
 	private Fazenda fazenda;
 	private Prefeitura prefeitura;
-	
-	
+
 	/*
 	 * Run
 	 */
 	@Override
 	public void run() {
 		while (status != Status.SACRIFICADO) {
-			
-			try {
-				Thread.sleep(2000);
-				System.out.println(this.getName() + " está " + getStatus());
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 			switch (status.toString()) {
-			case "Cultivando": 
+			case "Cultivando":
 				cultivar();
 				break;
 			}
@@ -49,7 +39,7 @@ public class Aldeao extends Thread {
 	public void setStatus(Enum<Status> status) {
 		this.status = status;
 	}
-	
+
 	public Fazenda getFazenda() {
 		return fazenda;
 	}
@@ -88,7 +78,7 @@ public class Aldeao extends Thread {
 	 */
 
 	public void cultivar() {
-		
+
 		try {
 			// Sleep de uma hora para Produzir
 			Thread.sleep(500);
@@ -102,7 +92,7 @@ public class Aldeao extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 }

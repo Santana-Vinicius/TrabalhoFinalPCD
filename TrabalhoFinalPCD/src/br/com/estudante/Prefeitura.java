@@ -1,18 +1,25 @@
 package br.com.estudante;
 
+import br.com.estudante.tela.Principal;
+
 public class Prefeitura {
 	private static Integer numAldeosCriados = 5;
 	private Integer unidadesComida;
 	private Integer unidadesOuro;
 	private Integer oferendasFe;
+	private Principal principal;
 
 	/*
 	 * Constructor
 	 */
-	public Prefeitura() {
+	public Prefeitura(Principal principal) {
 		this.unidadesComida = Integer.valueOf(150);
 		this.unidadesOuro = Integer.valueOf(100);
 		this.oferendasFe = Integer.valueOf(0);
+		this.principal = principal;
+		principal.mostrarComida(this.unidadesComida);
+		principal.mostrarOuro(this.unidadesOuro);
+		principal.mostrarOferendaFe(this.oferendasFe);
 	}
 
 	/*
@@ -24,6 +31,7 @@ public class Prefeitura {
 
 	public synchronized void addUnidadesComida(Integer unidadesComida) {
 		this.unidadesComida += unidadesComida;
+		this.principal.mostrarComida(this.unidadesComida);
 	}
 
 	public Integer getUnidadesOuro() {
@@ -48,7 +56,6 @@ public class Prefeitura {
 	
 	public Aldeao criarAldeao() {
 		Aldeao novo = new Aldeao(String.valueOf(numAldeosCriados), this);
-		System.out.println(novo.getNome());
 		numAldeosCriados++;
 		return novo;
 	}

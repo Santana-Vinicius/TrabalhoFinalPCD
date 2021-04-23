@@ -32,16 +32,17 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import br.com.estudante.Aldeao;
+import br.com.estudante.Status;
 import br.com.estudante.Vila;
 
 import java.awt.Toolkit;
 
 public class Principal extends JFrame {
-	//Minhas alteracoes
-	
+	// Minhas alteracoes
+
 	private Vila vila;
-	
-	//Edson alteracoes
+
+	// Edson alteracoes
 	private static final long serialVersionUID = 1L;
 	private JLabel lblJogador;
 	private JTable tblAldeoes;
@@ -78,22 +79,23 @@ public class Principal extends JFrame {
 	public Principal() {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Principal.class.getResource("/tela/img/icone.png")));
 		initialize();
-        String nome = JOptionPane.showInputDialog(null, "Informe seu nome", "Jogador", JOptionPane.QUESTION_MESSAGE);
-		String[] civilizacoes = {"Ac�dia", "Babil�nia", "Helen�stica", "Mesopot�mica", "Persa", "Sum�ria"};
-        String civilizacao = (String) JOptionPane.showInputDialog(null, "Escolha sua civiliza��o", "Jogador", JOptionPane.QUESTION_MESSAGE, null, civilizacoes, civilizacoes[0]);
-        this.lblJogador.setText(nome +" - "+ civilizacao);
-        
-        /*
-         * Minhas alteracoes
-         */
-        
-        this.vila = new Vila(this);
-        
-        // FIM
-		//********************************************************************
-		//*** Testar - Depois pode apagar ************************************
+		String nome = JOptionPane.showInputDialog(null, "Informe seu nome", "Jogador", JOptionPane.QUESTION_MESSAGE);
+		String[] civilizacoes = { "Ac�dia", "Babil�nia", "Helen�stica", "Mesopot�mica", "Persa", "Sum�ria" };
+		String civilizacao = (String) JOptionPane.showInputDialog(null, "Escolha sua civiliza��o", "Jogador",
+				JOptionPane.QUESTION_MESSAGE, null, civilizacoes, civilizacoes[0]);
+		this.lblJogador.setText(nome + " - " + civilizacao);
+
+		/*
+		 * Minhas alteracoes
+		 */
+
+		this.vila = new Vila(this);
+
+		// FIM
+		// ********************************************************************
+		// *** Testar - Depois pode apagar ************************************
 		this.testar();
-		//********************************************************************
+		// ********************************************************************
 	}
 
 	@SuppressWarnings("serial")
@@ -105,25 +107,25 @@ public class Principal extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.getContentPane().setLayout(null);
 
-		//*** Configuracoes **************************************************
+		// *** Configuracoes **************************************************
 
 		DefaultTableCellRenderer dtcrCentralizado = new DefaultTableCellRenderer();
 		dtcrCentralizado.setHorizontalAlignment(SwingConstants.CENTER);
 
 		DefaultTableCellRenderer dtcrAldeaoAcao = new DefaultTableCellRenderer() {
 			public void setValue(Object valor) {
-				String v=valor.toString();
-				if (v.equals("parado"))
+				String v = valor.toString();
+				if (v.equals("Parado"))
 					setBackground(Color.WHITE);
-				else if (v.equals("orando"))
+				else if (v.equals("Orando"))
 					setBackground(new Color(135, 206, 235));
-				else if (v.equals("sacrificado"))
+				else if (v.equals("Sacrificado"))
 					setBackground(Color.RED);
-				else if (v.contains("cultivando"))
+				else if (v.contains("Cultivando"))
 					setBackground(Color.GREEN);
-				else if (v.contains("minerando"))
+				else if (v.contains("Minerando"))
 					setBackground(Color.YELLOW);
-				else if (v.contains("construindo"))
+				else if (v.contains("Construindo"))
 					setBackground(Color.LIGHT_GRAY);
 				else
 					setBackground(Color.BLACK);
@@ -131,7 +133,7 @@ public class Principal extends JFrame {
 			}
 		};
 
-		//*** Componentes ****************************************************
+		// *** Componentes ****************************************************
 
 		JTabbedPane tpJogo = new JTabbedPane(JTabbedPane.TOP);
 		tpJogo.setBounds(10, 10, 850, 665);
@@ -156,13 +158,15 @@ public class Principal extends JFrame {
 
 		JPanel pnAldeao = new JPanel();
 		pnAldeao.setLayout(null);
-		pnAldeao.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Alde\u00F5es", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnAldeao.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Alde\u00F5es", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnAldeao.setBounds(10, 10, 270, 620);
 		pnTP_Vila.add(pnAldeao);
 
-		String[] colunasAldeoes = {"N�", "A��o"};
-		this.tmAldeoes = (new DefaultTableModel(null, colunasAldeoes){
-			public boolean isCellEditable(int row, int column){
+		String[] colunasAldeoes = { "N�", "A��o" };
+		this.tmAldeoes = (new DefaultTableModel(null, colunasAldeoes) {
+			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		});
@@ -224,13 +228,15 @@ public class Principal extends JFrame {
 
 		JPanel pnFazenda = new JPanel();
 		pnFazenda.setLayout(null);
-		pnFazenda.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Fazendas", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnFazenda.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Fazendas",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnFazenda.setBounds(290, 10, 270, 305);
 		pnTP_Vila.add(pnFazenda);
 
-		String[] colunasFazendas = {"N�", "Alde�es"};
-		this.tmFazendas = (new DefaultTableModel(null, colunasFazendas){
-			public boolean isCellEditable(int row, int column){
+		String[] colunasFazendas = { "N�", "Alde�es" };
+		this.tmFazendas = (new DefaultTableModel(null, colunasFazendas) {
+			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		});
@@ -251,16 +257,18 @@ public class Principal extends JFrame {
 
 		JPanel pnMinaOuro = new JPanel();
 		pnMinaOuro.setLayout(null);
-		pnMinaOuro.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Minas de ouro", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnMinaOuro.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Minas de ouro", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnMinaOuro.setBounds(290, 325, 270, 305);
 		pnTP_Vila.add(pnMinaOuro);
 
-		String[] colunasMinas = {"N�", "Alde�es"};
-		this.tmMinasOuro = (new DefaultTableModel(null, colunasMinas){
-			public boolean isCellEditable(int row, int column){
+		String[] colunasMinas = { "N�", "Alde�es" };
+		this.tmMinasOuro = (new DefaultTableModel(null, colunasMinas) {
+			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
-		});		
+		});
 
 		this.tblMinasOuro = new JTable(this.tmMinasOuro);
 		this.tblMinasOuro.setRowSelectionAllowed(false);
@@ -278,7 +286,9 @@ public class Principal extends JFrame {
 
 		JPanel pnPrefeitura = new JPanel();
 		pnPrefeitura.setLayout(null);
-		pnPrefeitura.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Prefeitura", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		pnPrefeitura.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Prefeitura", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnPrefeitura.setBounds(570, 10, 270, 175);
 		pnTP_Vila.add(pnPrefeitura);
 
@@ -324,14 +334,18 @@ public class Principal extends JFrame {
 
 		this.pnTemplo = new JPanel();
 		this.pnTemplo.setLayout(null);
-		this.pnTemplo.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Templo", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnTemplo.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Templo",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnTemplo.setBounds(570, 195, 270, 225);
 		this.pnTemplo.setEnabled(false);
 		pnTP_Vila.add(this.pnTemplo);
 
 		this.pnOferenda = new JPanel();
 		((FlowLayout) this.pnOferenda.getLayout()).setAlignment(FlowLayout.LEFT);
-		this.pnOferenda.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Oferendas de f�", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnOferenda.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Oferendas de f�", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnOferenda.setBounds(8, 15, 255, 45);
 		this.pnOferenda.setEnabled(false);
 		this.pnTemplo.add(this.pnOferenda);
@@ -380,7 +394,9 @@ public class Principal extends JFrame {
 
 		this.pnMaravilha = new JPanel();
 		this.pnMaravilha.setLayout(null);
-		this.pnMaravilha.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Maravilha", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnMaravilha.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Maravilha",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnMaravilha.setBounds(570, 430, 270, 200);
 		this.pnMaravilha.setEnabled(false);
 		pnTP_Vila.add(this.pnMaravilha);
@@ -401,7 +417,7 @@ public class Principal extends JFrame {
 
 		tpJogo.setSelectedIndex(1);
 
-		//*** Eventos ********************************************************
+		// *** Eventos ********************************************************
 
 		btnAldeaoParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -441,7 +457,7 @@ public class Principal extends JFrame {
 
 		btnPrefeituraCriarAldeao.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				comandoPrefeituraCriarAldeao();				
+				comandoPrefeituraCriarAldeao();
 			}
 		});
 
@@ -465,19 +481,12 @@ public class Principal extends JFrame {
 
 	}
 
-	//************************************************************************
-	//*** Testar - Depois pode apagar ****************************************
-	//************************************************************************
+	// ************************************************************************
+	// *** Testar - Depois pode apagar ****************************************
+	// ************************************************************************
 	public void testar() {
-//		this.adicionarAldeao("1", "fazendo nada");
-//		this.mostrarAldeao(1, "continua fazendo nada");
-//		this.adicionarFazenda("1", "aaaa");
-//		this.mostrarFazenda(1, "bbbb");
-		this.mostrarComida(111);
 		this.adicionarMinaOuro("1", "cccc");
 		this.mostrarMinaOuro(1, "dddd");
-		this.mostrarOuro(222);
-		this.mostrarOferendaFe(333);
 		this.mostrarPrefeitura("eeee", Color.ORANGE);
 		this.habilitarTemplo();
 		this.habilitarMaravilha();
@@ -485,38 +494,38 @@ public class Principal extends JFrame {
 		List<String> evolucoes = new ArrayList<String>();
 		evolucoes.add("NUVEM_GAFANHOTOS");
 		evolucoes.add("MORTE_PRIMOGENITOS");
-		evolucoes.add("CHUVA_PEDRAS"); 
+		evolucoes.add("CHUVA_PEDRAS");
 		this.mostrarAtaques(evolucoes);
 		this.mostrarTemplo("ffff", Color.MAGENTA);
 
 	}
-	//************************************************************************
-	//************************************************************************
-	//************************************************************************
+	// ************************************************************************
+	// ************************************************************************
+	// ************************************************************************
 
-	//*** Entrada=Apresenta��o - altera valores dos componentes **************
+	// *** Entrada=Apresenta��o - altera valores dos componentes **************
 
 	public void mostrarMensagemErro(String titulo, String mensagem) {
 		JOptionPane.showMessageDialog(null, mensagem, titulo, JOptionPane.ERROR_MESSAGE);
 	}
 
 	public void adicionarAldeao(String numero, String acao) {
-		String[] linha = {numero, acao};
+		String[] linha = { String.valueOf(Integer.valueOf(numero) + 1), acao };
 		this.tmAldeoes.addRow(linha);
 	}
 
 	public void mostrarAldeao(int aldeao, String acao) {
-		this.tblAldeoes.setValueAt(acao, aldeao-1, 1);
+		this.tblAldeoes.setValueAt(acao, aldeao, 1);
 	}
 
 	public void adicionarFazenda(String numero, String aldeoes) {
-		String[] linha = {numero, aldeoes};
+		String[] linha = { String.valueOf(Integer.valueOf(numero) + 1), aldeoes };
 		this.tmFazendas.addRow(linha);
 		this.cbFazenda.addItem(numero);
 	}
 
 	public void mostrarFazenda(int fazenda, String aldeoes) {
-		this.tblFazendas.setValueAt(aldeoes, fazenda-1, 1);
+		this.tblFazendas.setValueAt(aldeoes, fazenda, 1);
 	}
 
 	public void mostrarComida(int qtd) {
@@ -524,13 +533,13 @@ public class Principal extends JFrame {
 	}
 
 	public void adicionarMinaOuro(String numero, String aldeoes) {
-		String[] linha = {numero, aldeoes};
+		String[] linha = { numero, aldeoes };
 		this.tmMinasOuro.addRow(linha);
 		this.cbMinaOuro.addItem(numero);
 	}
 
 	public void mostrarMinaOuro(int minaOuro, String aldeoes) {
-		this.tblMinasOuro.setValueAt(aldeoes, minaOuro-1, 1);
+		this.tblMinasOuro.setValueAt(aldeoes, minaOuro - 1, 1);
 	}
 
 	public void mostrarOuro(int qtd) {
@@ -571,9 +580,14 @@ public class Principal extends JFrame {
 		this.cbTemploLancamentos.removeAllItems();
 		for (String evolucao : evolucoes) {
 			switch (evolucao) {
-			case "NUVEM_GAFANHOTOS":	this.cbTemploLancamentos.addItem("Nuvem de gafanhotos");	break;
-			case "MORTE_PRIMOGENITOS":	this.cbTemploLancamentos.addItem("Morte dos primog�nitos");	break;
-			case "CHUVA_PEDRAS": 		this.cbTemploLancamentos.addItem("Chuva de pedras");
+			case "NUVEM_GAFANHOTOS":
+				this.cbTemploLancamentos.addItem("Nuvem de gafanhotos");
+				break;
+			case "MORTE_PRIMOGENITOS":
+				this.cbTemploLancamentos.addItem("Morte dos primog�nitos");
+				break;
+			case "CHUVA_PEDRAS":
+				this.cbTemploLancamentos.addItem("Chuva de pedras");
 			}
 		}
 	}
@@ -583,7 +597,7 @@ public class Principal extends JFrame {
 		this.tfTemplo.setBackground(cor);
 	}
 
-	//*** Sa�da=A��es/comandos - informa a��o do usu�rio *********************
+	// *** Sa�da=A��es/comandos - informa a��o do usu�rio *********************
 
 	public void comandoAldeaoParar(int aldeao) {
 		if (aldeao == -1)
@@ -602,8 +616,13 @@ public class Principal extends JFrame {
 	public void comandoAldeaoCultivar(int aldeao, int numeroFazenda) {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um alde�o");
-		else
-			System.out.println("comandoAldeaoCultivar(aldeao, numeroFazenda);");
+		else {
+			Aldeao novoFazendeiro = this.vila.getAldeao(aldeao);
+			novoFazendeiro.setFazenda(this.vila.getFazenda(numeroFazenda));
+			novoFazendeiro.setStatus(Status.CULTIVANDO);
+			this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
+		}
+
 	}
 
 	public void comandoAldeaoMinerar(int aldeao, int numeroMinaOuro) {
@@ -639,7 +658,7 @@ public class Principal extends JFrame {
 	public void comandoTemploEvoluir(String strEvolucao) {
 		System.out.println("comandoTemploEvoluir(strEvolucao);");
 	}
-	
+
 	public void comandoTemploLancar() {
 		System.out.println("comandoTemploLancar();");
 	}
