@@ -1,0 +1,63 @@
+package br.com.estudante;
+
+import java.util.ArrayList;
+
+public class Fazenda extends Thread {
+	private int num;
+	private ArrayList<Aldeao> fazendeiros = new ArrayList<Aldeao>();
+	private Prefeitura prefeitura;
+
+	Fazenda(int num, Prefeitura prefeitura) {
+		setPrefeitura(prefeitura);
+		this.num = num;
+		this.setName(Integer.toString(num));
+	}
+
+	@Override
+	public void run() {
+		while (true) {
+			if (this.fazendeiros.size() > 0) {
+				System.out.println("Posso cultivar!");
+				this.cultivar();
+			} else
+				System.out.println(""); // Por algum motivo só funciona porque tem esse print
+		}
+
+	}
+
+	public void cultivar() {
+		for (Aldeao fazendeiro : fazendeiros) {
+			if (!fazendeiro.getStatus().equals("Cultivando")) {
+				fazendeiro.setStatus("Cultivando");
+				fazendeiro.setNumFazenda(this.num);
+				this.prefeitura.getPrincipal().mostrarAldeao(fazendeiro.getNum()); // Retornar o indice do aldeão
+			}
+		}
+	}
+
+	public Aldeao getFazendeiro(int fazendeiro) {
+		return fazendeiros.get(fazendeiro);
+	}
+
+	public void adicionarFazendeiro(Aldeao fazendeiro) {
+		this.fazendeiros.add(fazendeiro);
+		System.out.println(this.fazendeiros.size());
+	}
+
+	public void removeFazendeiro(Aldeao aldeao) {
+		this.fazendeiros.remove(aldeao);
+	}
+
+	public Prefeitura getPrefeitura() {
+		return prefeitura;
+	}
+
+	public void setPrefeitura(Prefeitura prefeitura) {
+		this.prefeitura = prefeitura;
+	}
+
+	public int getNum() {
+		return num;
+	}
+
+}

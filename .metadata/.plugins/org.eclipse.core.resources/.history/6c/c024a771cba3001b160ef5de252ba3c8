@@ -1,0 +1,149 @@
+package br.com.estudante;
+
+public class Aldeao extends Thread {
+	private int num, qtdComida, qtdOuro, numFazenda, numMinaOuro;
+	private Prefeitura prefeitura;
+	private String status;
+
+	Aldeao(int num, Prefeitura prefeitura) {
+		this.setNum(num);
+		this.prefeitura = prefeitura;
+		this.setName(Integer.toString(num));
+		this.parar();
+	}
+
+	public int getNum() {
+		return num;
+	}
+
+	public void setNum(int num) {
+		if (this.num >= 0)
+			this.num = num;
+		else
+			System.out.println("Número inserido é inválido");
+	}
+
+	public Prefeitura getPrefeitura() {
+		return prefeitura;
+	}
+
+	public void setPrefeitura(Prefeitura prefeitura) {
+		if (this.prefeitura != null)
+			this.prefeitura = prefeitura;
+		else
+			System.out.println("Prefeitura inserida é inválida");
+	}
+
+	@Override
+	public void run() {
+		while (!this.status.equals("Sacrificado")) {
+			System.out.println("ALDEAO STATUS " + this.getName() +  ": " + this.getStatus());
+			switch (this.status) {
+			case "Cultivando":
+				System.out.println("Posso produzir!");
+				this.cultivar();
+				break;
+			case "Minerando":
+				this.minerar();
+				break;
+			case "Construindo":
+				this.construir(status);
+			}
+		}
+	}
+
+	public void parar() {
+		this.setStatus("Parado");
+		this.setNumFazenda(-1);
+	}
+
+	public void cultivar() {
+		while (this.status.equals("Cultivando")) {
+			try {
+				Thread.sleep(1000);
+				this.setQtdComida(5);
+				System.out.println("Produziuu!");
+				Thread.sleep(1500);
+				this.prefeitura.setComida(this.qtdComida);
+				System.out.println("Entregou a comida!");
+				this.qtdComida = 0;
+			} catch (InterruptedException e) {
+
+			}
+
+		}
+	}
+
+	public void minerar() {
+		while (this.status.equals("Cultivando")) {
+
+		}
+	}
+
+	public boolean construir(String qual) {
+		int comida = prefeitura.getComida(), ouro = prefeitura.getOuro();
+		boolean temRecurso = false;
+		switch (qual) {
+		case "Fazenda":
+			if (comida >= 100 && ouro >= 500) {
+				prefeitura.adicionarFazenda(new Fazenda(this.prefeitura.getPrincipal().numFazenda, this.prefeitura));
+				prefeitura.alterarValorComidaOuro(-100, -500);
+				temRecurso = true;
+			}
+			break;
+		case "Mina de ouro":
+			if (comida >= 1000) {
+				prefeitura.adicionarMinaDeOuro(new MinaDeOuro());
+				prefeitura.alterarValorComidaOuro(-1000, 0);
+				temRecurso = true;
+			}
+			break;
+		case "Templo":
+			if (prefeitura.getTemplo() != null) {
+				if (comida >= 2000 && ouro >= 2000) {
+
+					prefeitura.setTemplo(new Templo());
+					prefeitura.alterarValorComidaOuro(-2000, -2000);
+					temRecurso = true;
+				}
+			}
+		}
+		if (temRecurso)
+			return true;
+		return false;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public int getQtdComida() {
+		return qtdComida;
+	}
+
+	public void setQtdComida(int qtdComida) {
+		this.qtdComida = qtdComida;
+
+	}
+
+	public int getQtdOuro() {
+		return qtdOuro;
+	}
+
+	public void setQtdOuro(int qtdOuro) {
+		this.qtdOuro = qtdOuro;
+	}
+
+	public int getNumFazenda() {
+		return numFazenda;
+	}
+
+	public void setNumFazenda(int numFazenda) {
+		this.numFazenda = numFazenda;
+	}
+
+}
