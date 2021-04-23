@@ -15,9 +15,9 @@ public class Vila {
 	 */
 	public Vila(Principal principal) {
 		this.principal = principal;
-		this.prefeitura = new Prefeitura(this.principal);
+		this.prefeitura = new Prefeitura(principal);
 		setAldeoes(geraAldeoes());
-		addFazenda(new Fazenda());
+		addFazenda(new Fazenda("0", this.principal));
 	}
 
 	public Vila() {
@@ -57,12 +57,14 @@ public class Vila {
 		for (Aldeao aldeao : aldeoes) {
 			principal.adicionarAldeao(aldeao.getNome(), aldeao.getStatus());
 			principal.mostrarAldeao(Integer.valueOf(aldeao.getNome()), aldeao.getStatus());
+			aldeao.start();
 		}
 	}
 
 	public void addAldeao(Aldeao novo) {
 		this.aldeoes.add(novo);
 		principal.adicionarAldeao(novo.getNome(), novo.getStatus());
+		novo.start();
 		principal.mostrarAldeao(Integer.valueOf(novo.getNome()), novo.getStatus());
 	}
 
@@ -80,7 +82,7 @@ public class Vila {
 
 	public void addFazenda(Fazenda novo) {
 		this.fazendas.add(novo);
-		principal.adicionarFazenda("0", "aaa");
+		principal.adicionarFazenda(novo.getNome(), "");
 	}
 
 	/*
@@ -105,13 +107,11 @@ public class Vila {
 	private ArrayList<Aldeao> geraAldeoes() {
 		ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
 
-		for (Integer i = 0; i < 5; i++) {
+		for (Integer i = 0; i < 5; i++)
 			aldeoes.add(new Aldeao(String.valueOf(i), this.prefeitura));
-			System.out.println(aldeoes.get(i).getNome());
-			aldeoes.get(i).start();
-		}
 
 		return aldeoes;
 	}
+
 
 }

@@ -533,7 +533,7 @@ public class Principal extends JFrame {
 	}
 
 	public void adicionarMinaOuro(String numero, String aldeoes) {
-		String[] linha = { numero, aldeoes };
+		String[] linha = { String.valueOf(Integer.valueOf(numero) + 1), aldeoes };
 		this.tmMinasOuro.addRow(linha);
 		this.cbMinaOuro.addItem(numero);
 	}
@@ -602,15 +602,24 @@ public class Principal extends JFrame {
 	public void comandoAldeaoParar(int aldeao) {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um alde�o");
-		else
-			System.out.println("comandoAldeaoParar(aldeao);");
+		else {
+			Aldeao aldeaoSelecionado = this.vila.getAldeao(aldeao);
+			aldeaoSelecionado.setStatus(Status.PARADO);
+			this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
+		}
+
 	}
 
 	public void comandoAldeaoConstruir(int aldeao, String qual) {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um alde�o");
-		else
-			System.out.println("comandoAldeaoConstruir(aldeao, qual);");
+		else {
+			System.out.println(qual);
+			Aldeao aldeaoSelecionado = this.vila.getAldeao(aldeao);
+			aldeaoSelecionado.setTipoConstrucao(qual);
+			aldeaoSelecionado.setStatus(Status.CONSTRUINDO);
+		}
+			
 	}
 
 	public void comandoAldeaoCultivar(int aldeao, int numeroFazenda) {
@@ -619,6 +628,7 @@ public class Principal extends JFrame {
 		else {
 			Aldeao novoFazendeiro = this.vila.getAldeao(aldeao);
 			novoFazendeiro.setFazenda(this.vila.getFazenda(numeroFazenda));
+			this.mostrarComida(this.vila.getPrefeitura().getUnidadesComida());
 			novoFazendeiro.setStatus(Status.CULTIVANDO);
 			this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
 		}
@@ -648,7 +658,9 @@ public class Principal extends JFrame {
 
 	public void comandoPrefeituraCriarAldeao() {
 		Aldeao novo = this.vila.getPrefeitura().criarAldeao();
-		this.vila.addAldeao(novo);
+		if (novo != null)
+			this.vila.addAldeao(novo);
+
 	}
 
 	public void comandoPrefeituraEvoluir(String strEvolucao) {
@@ -662,5 +674,10 @@ public class Principal extends JFrame {
 	public void comandoTemploLancar() {
 		System.out.println("comandoTemploLancar();");
 	}
-
+	
+	// Getters and Setters
+	
+	public Vila getVila() {
+		return vila;
+	}
 }
