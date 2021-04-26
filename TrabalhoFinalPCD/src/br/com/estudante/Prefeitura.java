@@ -13,8 +13,8 @@ public class Prefeitura {
 	 * Constructor
 	 */
 	public Prefeitura(Principal principal) {
-		this.unidadesComida = Integer.valueOf(150);
-		this.unidadesOuro = Integer.valueOf(500);
+		this.unidadesComida = Integer.valueOf(10000);
+		this.unidadesOuro = Integer.valueOf(10000);
 		this.oferendasFe = Integer.valueOf(0);
 		this.principal = principal;
 		principal.mostrarComida(this.unidadesComida);

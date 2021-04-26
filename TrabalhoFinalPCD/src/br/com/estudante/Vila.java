@@ -7,6 +7,7 @@ import br.com.estudante.tela.Principal;
 public class Vila {
 	private Principal principal;
 	private Prefeitura prefeitura;
+	private Templo templo;
 	private ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
 	private ArrayList<Fazenda> fazendas = new ArrayList<Fazenda>();
 	private ArrayList<MinaOuro> minasOuro = new ArrayList<MinaOuro>();
@@ -72,6 +73,15 @@ public class Vila {
 	public void addFazenda(Fazenda novo) {
 		this.fazendas.add(novo);
 		principal.adicionarFazenda(novo.getNome(), "");
+	}
+
+	public Templo getTemplo() {
+		return templo;
+	}
+
+	public void setTemplo(Templo templo) {
+		this.templo = templo;
+		this.principal.habilitarTemplo();
 	}
 
 	public MinaOuro getMinaOuro(Integer index) {

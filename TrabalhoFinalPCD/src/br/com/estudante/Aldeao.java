@@ -41,9 +41,11 @@ public class Aldeao extends Thread {
 			case "Construindo":
 				this.construir();
 				break;
+			case "Orando":
+				this.orar();
+				break;
 			}
 		}
-
 	}
 
 	/*
@@ -131,6 +133,7 @@ public class Aldeao extends Thread {
 			}
 
 		} catch (InterruptedException e) {
+			this.setStatus(Status.PARADO);
 			this.run();
 		}
 
@@ -150,6 +153,7 @@ public class Aldeao extends Thread {
 			}
 
 		} catch (InterruptedException e) {
+			this.setStatus(Status.PARADO);
 			this.run();
 		}
 
@@ -176,13 +180,21 @@ public class Aldeao extends Thread {
 				this.tipoConstrucao = "";
 			}
 			break;
+		case "Templo":
+			Templo templo = construirTemplo();
+			if (templo != null) {
+				vila.setTemplo(templo);
+				this.status = Status.PARADO;
+				this.tipoConstrucao = "";
+			}
+			break;
 		}
 		this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
 		this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
 		this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
 	}
 
-	public Fazenda construirFazenda() {
+	private Fazenda construirFazenda() {
 		Principal principal = this.prefeitura.getPrincipal();
 		if (this.prefeitura.getUnidadesComida() >= 100 && this.prefeitura.getUnidadesOuro() >= 500) {
 			try {
@@ -191,7 +203,8 @@ public class Aldeao extends Thread {
 				this.prefeitura.addUnidadesOuro(-500);
 				return new Fazenda(String.valueOf(principal.getVila().getQtdFazendas()), principal);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				this.setStatus(Status.PARADO);
+				this.run();
 			}
 		}
 
@@ -213,7 +226,7 @@ public class Aldeao extends Thread {
 		return null;
 	}
 
-	public MinaOuro construirMina() {
+	private MinaOuro construirMina() {
 		Principal principal = this.prefeitura.getPrincipal();
 		if (this.prefeitura.getUnidadesComida() >= 1000) {
 			try {
@@ -222,7 +235,8 @@ public class Aldeao extends Thread {
 				this.prefeitura.addUnidadesOuro(-500);
 				return new MinaOuro(String.valueOf(principal.getVila().getQtdMinasOuro()), principal);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				this.setStatus(Status.PARADO);
+				this.run();
 			}
 		}
 		this.prefeitura.getPrincipal().mostrarMensagemErro("Recursos insuficientes",
@@ -230,6 +244,51 @@ public class Aldeao extends Thread {
 		this.status = Status.PARADO;
 		this.tipoConstrucao = "";
 		return null;
+	}
+
+	private Templo construirTemplo() {
+		Principal principal = this.prefeitura.getPrincipal();
+		if (this.prefeitura.getUnidadesComida() >= 2000 && this.prefeitura.getUnidadesOuro() >= 2000) {
+			try {
+				Thread.sleep(2000); // ALTERAR
+				this.prefeitura.addUnidadesComida(-2000);
+				this.prefeitura.addUnidadesOuro(-2000);
+				return new Templo(principal);
+			} catch (InterruptedException e) {
+				this.setStatus(Status.PARADO);
+				this.run();
+			}
+		}
+		String msg = "";
+
+		if (this.prefeitura.getUnidadesComida() < 2000 && this.prefeitura.getUnidadesOuro() >= 2000)
+			msg += 2000 - this.prefeitura.getUnidadesComida() + " de comida";
+
+		else if (this.prefeitura.getUnidadesComida() >= 2000 && this.prefeitura.getUnidadesOuro() < 2000)
+			msg += 2000 - this.prefeitura.getUnidadesOuro() + " de ouro";
+
+		else
+			msg += (2000 - this.prefeitura.getUnidadesComida()) + " de comida e "
+					+ (2000 - this.prefeitura.getUnidadesOuro()) + " de ouro";
+
+		this.prefeitura.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
+		return null;
+	}
+
+	public void orar() {
+		this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
+		try {
+			// Sleep de cinco horas para Produzir
+			Thread.sleep(2500);
+			Integer oferendaProduzida = this.getPrefeitura().getPrincipal().getVila().getTemplo().orar();
+			synchronized (this.getPrefeitura().getPrincipal().getVila().getTemplo()) {
+				prefeitura.addOferendasFe(oferendaProduzida);
+				this.prefeitura.getPrincipal().mostrarOferendaFe(this.prefeitura.getOferendasFe());
+			}
+		} catch (InterruptedException e) {
+			this.setStatus(Status.PARADO);
+			this.run();
+		}
 	}
 
 }
