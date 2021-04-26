@@ -1,11 +1,17 @@
 package br.com.estudante.teste;
 
+//import br.com.estudante.Utils.Utils;
+
 public class Application {
 //	public static void main(String[] args) {
 //		Vila vila = new Vila();
-//
+		
+		
+//		System.out.println(Utils.calculaComida(4));
+		
+		
 //		System.out.println(vila);
-//		
+		
 //		//Aldeao que vai cultivar
 //		Aldeao fazendeiro = vila.getAldeao(0);
 //		Aldeao fazendeiro2 = vila.getAldeao(1);
@@ -37,5 +43,5 @@ public class Application {
 //		}
 //		
 //		
-//	}
-}
+	}
+//}

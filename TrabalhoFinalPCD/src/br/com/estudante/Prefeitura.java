@@ -14,7 +14,7 @@ public class Prefeitura {
 	 */
 	public Prefeitura(Principal principal) {
 		this.unidadesComida = Integer.valueOf(150);
-		this.unidadesOuro = Integer.valueOf(100);
+		this.unidadesOuro = Integer.valueOf(500);
 		this.oferendasFe = Integer.valueOf(0);
 		this.principal = principal;
 		principal.mostrarComida(this.unidadesComida);
@@ -46,6 +46,10 @@ public class Prefeitura {
 		return oferendasFe;
 	}
 
+	public Principal getPrincipal() {
+		return principal;
+	}
+
 	public void addOferendasFe(Integer oferendasFe) {
 		this.oferendasFe += oferendasFe;
 	}
@@ -53,10 +57,17 @@ public class Prefeitura {
 	/*
 	 * Criar aldeao
 	 */
-	
+
 	public Aldeao criarAldeao() {
-		Aldeao novo = new Aldeao(String.valueOf(numAldeosCriados), this);
-		numAldeosCriados++;
-		return novo;
+		if (this.unidadesComida >= 100) {
+			Aldeao novo = new Aldeao(String.valueOf(numAldeosCriados), this);
+			numAldeosCriados++;
+			this.addUnidadesComida(-100);
+			return novo;
+		}
+		this.principal.mostrarMensagemErro("Recursos insuficientes",
+				"Você precisa de mais " + (100 - this.unidadesComida) + " de comida.");
+		return null;
+
 	}
 }
