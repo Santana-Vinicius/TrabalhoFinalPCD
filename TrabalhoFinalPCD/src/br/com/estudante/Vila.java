@@ -9,6 +9,7 @@ public class Vila {
 	private Prefeitura prefeitura;
 	private ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
 	private ArrayList<Fazenda> fazendas = new ArrayList<Fazenda>();
+	private ArrayList<MinaOuro> minasOuro = new ArrayList<MinaOuro>();
 
 	/*
 	 * Constructor da Vila
@@ -18,6 +19,7 @@ public class Vila {
 		this.prefeitura = new Prefeitura(principal);
 		setAldeoes(geraAldeoes());
 		addFazenda(new Fazenda("0", this.principal));
+		addMinaOuro(new MinaOuro("0", this.principal));
 	}
 
 	public Vila() {
@@ -28,7 +30,6 @@ public class Vila {
 	 */
 
 	public String toString() {
-		// TODO Auto-generated method stub
 		return "UNIDADES DE COMIDA: " + prefeitura.getUnidadesComida() + "\n" + "UNIDADES DE OURO: "
 				+ prefeitura.getUnidadesOuro() + "\n";
 	}
@@ -42,10 +43,6 @@ public class Vila {
 
 	public void setPrefeitura(Prefeitura prefeitura) {
 		this.prefeitura = prefeitura;
-	}
-
-	public ArrayList<Aldeao> getAldeoes() {
-		return aldeoes;
 	}
 
 	public Aldeao getAldeao(Integer index) {
@@ -68,21 +65,30 @@ public class Vila {
 		principal.mostrarAldeao(Integer.valueOf(novo.getNome()), novo.getStatus());
 	}
 
-	public ArrayList<Fazenda> getFazendas() {
-		return fazendas;
-	}
-
 	public Fazenda getFazenda(Integer index) {
 		return this.fazendas.get(index);
-	}
-
-	public void setFazendas(ArrayList<Fazenda> fazendas) {
-		this.fazendas = fazendas;
 	}
 
 	public void addFazenda(Fazenda novo) {
 		this.fazendas.add(novo);
 		principal.adicionarFazenda(novo.getNome(), "");
+	}
+
+	public MinaOuro getMinaOuro(Integer index) {
+		return this.minasOuro.get(index);
+	}
+
+	public void addMinaOuro(MinaOuro novo) {
+		this.minasOuro.add(novo);
+		principal.adicionarMinaOuro(novo.getNome(), "");
+	}
+
+	public int getQtdFazendas() {
+		return this.fazendas.size();
+	}
+
+	public int getQtdMinasOuro() {
+		return this.minasOuro.size();
 	}
 
 	/*
@@ -112,6 +118,5 @@ public class Vila {
 
 		return aldeoes;
 	}
-
 
 }

@@ -61,7 +61,6 @@ public class Prefeitura {
 	public Aldeao criarAldeao() {
 		if (this.unidadesComida >= 100) {
 			Aldeao novo = new Aldeao(String.valueOf(numAldeosCriados), this);
-			novo.esperaCriação();
 			numAldeosCriados++;
 			this.addUnidadesComida(-100);
 			return novo;

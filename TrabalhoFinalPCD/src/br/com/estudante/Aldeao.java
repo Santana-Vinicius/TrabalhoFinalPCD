@@ -8,6 +8,7 @@ public class Aldeao extends Thread {
 	// = Maravilha
 	private Enum<Status> status;
 	private Fazenda fazenda;
+	private MinaOuro minaOuro;
 	private Prefeitura prefeitura;
 	private int nivel;
 
@@ -29,12 +30,13 @@ public class Aldeao extends Thread {
 	@Override
 	public void run() {
 		while (this.status != Status.SACRIFICADO) {
-			this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
-			this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
-			this.prefeitura.getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
+			this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
 			switch (this.status.toString()) {
 			case "Cultivando":
 				this.cultivar();
+				break;
+			case "Minerando":
+				this.minerar();
 				break;
 			case "Construindo":
 				this.construir();
@@ -68,7 +70,17 @@ public class Aldeao extends Thread {
 	}
 
 	public void setFazenda(Fazenda fazenda) {
-		this.fazenda = fazenda;
+		if (this.fazenda != fazenda)
+			this.fazenda = fazenda;
+	}
+
+	public MinaOuro getMinaOuro() {
+		return minaOuro;
+	}
+
+	public void setMinaOuro(MinaOuro minaOuro) {
+		if (this.minaOuro != minaOuro)
+			this.minaOuro = minaOuro;
 	}
 
 	public Prefeitura getPrefeitura() {
@@ -87,11 +99,11 @@ public class Aldeao extends Thread {
 		this.nivel = nivel;
 	}
 
-	public String getTipoConstrucao() {
+	public synchronized String getTipoConstrucao() {
 		return tipoConstrucao;
 	}
 
-	public void setTipoConstrucao(String tipoConstrucao) {
+	public synchronized void setTipoConstrucao(String tipoConstrucao) {
 		this.tipoConstrucao = tipoConstrucao;
 	}
 
@@ -106,30 +118,45 @@ public class Aldeao extends Thread {
 	 * Funcoes do aldeão
 	 */
 
-	public void esperaCriação() {
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public void cultivar() {
-
 		try {
 			// Sleep de uma hora para Produzir
 			Thread.sleep(500);
 			Integer comidaProduzida = fazenda.cultivar(this.nivel);
 			// Sleep de duas horas para Transportar
 			Thread.sleep(Utils.calculaTempoTransporte(this.nivel, 1000));
-			prefeitura.addUnidadesComida(comidaProduzida);
+			synchronized (fazenda) {
+				prefeitura.addUnidadesComida(comidaProduzida);
+				this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
+			}
+
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			this.run();
+		}
+
+	}
+
+	public void minerar() {
+		this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
+		try {
+			// Sleep de duas horas para Produzir
+			Thread.sleep(1000);
+			Integer ouroProduzido = minaOuro.minerar(this.nivel);
+			// Sleep de três horas para Transportar
+			Thread.sleep(Utils.calculaTempoTransporte(this.nivel, 1500));
+			synchronized (minaOuro) {
+				prefeitura.addUnidadesOuro(ouroProduzido);
+				this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
+			}
+
+		} catch (InterruptedException e) {
+			this.run();
 		}
 
 	}
 
 	public void construir() {
+		this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
 		Vila vila = this.prefeitura.getPrincipal().getVila();
 		switch (this.tipoConstrucao) {
 		case "Fazenda":
@@ -141,7 +168,18 @@ public class Aldeao extends Thread {
 			}
 
 			break;
+		case "Mina de ouro":
+			MinaOuro minaOuro = construirMina();
+			if (minaOuro != null) {
+				vila.addMinaOuro(minaOuro);
+				this.status = Status.PARADO;
+				this.tipoConstrucao = "";
+			}
+			break;
 		}
+		this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
+		this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
+		this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
 	}
 
 	public Fazenda construirFazenda() {
@@ -151,7 +189,7 @@ public class Aldeao extends Thread {
 				Thread.sleep(3000);
 				this.prefeitura.addUnidadesComida(-100);
 				this.prefeitura.addUnidadesOuro(-500);
-				return new Fazenda(String.valueOf(principal.getVila().getFazendas().size()), principal);
+				return new Fazenda(String.valueOf(principal.getVila().getQtdFazendas()), principal);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -170,6 +208,25 @@ public class Aldeao extends Thread {
 					+ (100 - this.prefeitura.getUnidadesOuro()) + " de ouro";
 
 		this.prefeitura.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
+		this.status = Status.PARADO;
+		this.tipoConstrucao = "";
+		return null;
+	}
+
+	public MinaOuro construirMina() {
+		Principal principal = this.prefeitura.getPrincipal();
+		if (this.prefeitura.getUnidadesComida() >= 1000) {
+			try {
+				Thread.sleep(3000);
+				this.prefeitura.addUnidadesComida(-100);
+				this.prefeitura.addUnidadesOuro(-500);
+				return new MinaOuro(String.valueOf(principal.getVila().getQtdMinasOuro()), principal);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		this.prefeitura.getPrincipal().mostrarMensagemErro("Recursos insuficientes",
+				"Você precisa de mais " + (1000 - this.prefeitura.getUnidadesComida()) + " de comida");
 		this.status = Status.PARADO;
 		this.tipoConstrucao = "";
 		return null;

@@ -19,5 +19,14 @@ public abstract class Utils {
 		}
 		return qtdTotal;
 	}
+	
+	public static Integer calculaOuro (int nivelAldeao) {
+		int qtdTotal = 5;
+		if (nivelAldeao > 1) {
+			for (int i = 1; i < nivelAldeao; i++)
+				qtdTotal *= 2;
+		}
+		return qtdTotal;
+	}
 
 }
