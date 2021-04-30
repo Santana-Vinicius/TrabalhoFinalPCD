@@ -7,7 +7,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -94,6 +93,7 @@ public class Principal extends JFrame {
 		 */
 
 		this.vila = new Vila(this);
+		this.vila.getPrefeitura().start();
 
 		// FIM
 		// ********************************************************************
@@ -492,12 +492,6 @@ public class Principal extends JFrame {
 		this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
 		// this.habilitarMaravilha();
 		// this.mostrarMaravilha(444);
-//		List<String> evolucoes = new ArrayList<String>();
-//		evolucoes.add("NUVEM_GAFANHOTOS");
-//		evolucoes.add("MORTE_PRIMOGENITOS");
-//		evolucoes.add("CHUVA_PEDRAS");
-//		this.mostrarAtaques(evolucoes);
-//		this.mostrarTemplo("ffff", Color.MAGENTA);
 
 	}
 	// ************************************************************************
@@ -581,13 +575,13 @@ public class Principal extends JFrame {
 		this.cbTemploLancamentos.removeAllItems();
 		for (String evolucao : evolucoes) {
 			switch (evolucao) {
-			case "NUVEM_GAFANHOTOS":
+			case "Nuvem de gafanhotos":
 				this.cbTemploLancamentos.addItem("Nuvem de gafanhotos");
 				break;
-			case "MORTE_PRIMOGENITOS":
+			case "Morte dos primogênitos":
 				this.cbTemploLancamentos.addItem("Morte dos primogênitos");
 				break;
-			case "CHUVA_PEDRAS":
+			case "Chuva de pedras":
 				this.cbTemploLancamentos.addItem("Chuva de pedras");
 			}
 		}
@@ -611,6 +605,14 @@ public class Principal extends JFrame {
 				if (aldeaoSelecionado.getFazenda() != null) {
 					Fazenda fazenda = aldeaoSelecionado.getFazenda();
 					fazenda.removeFazendeiro(aldeaoSelecionado);
+				} else if (aldeaoSelecionado.getMinaOuro() != null) {
+					MinaOuro minaOuro = aldeaoSelecionado.getMinaOuro();
+					minaOuro.removeMinerador(aldeaoSelecionado);
+				} else if (this.getVila().getMaravilha() != null) {
+					this.getVila().getMaravilha().procuraRemoveConstrutor(aldeaoSelecionado);
+					aldeaoSelecionado.setTipoConstrucao("");
+				} else if (this.getVila().getTemplo() != null) {
+					this.getVila().getTemplo().procuraremoveReligioso(aldeaoSelecionado);
 				}
 				aldeaoSelecionado.setStatus(Status.PARADO);
 				this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
@@ -651,6 +653,9 @@ public class Principal extends JFrame {
 					aldeaoSelecionado.setTipoConstrucao(qual);
 					aldeaoSelecionado.setStatus(Status.CONSTRUINDO);
 					this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
+					if (this.getVila().getTemplo() != null)
+						this.habilitarTemplo();
+
 				}
 			}
 		}
@@ -667,7 +672,7 @@ public class Principal extends JFrame {
 			} else {
 				Fazenda fazenda = this.vila.getFazenda(numeroFazenda);
 				synchronized (fazenda) {
-					if (fazenda.getQtdFazendeiros() < 5) {
+					if (fazenda.getQtdFazendeiros() < fazenda.getCapacidade()) {
 						if (!novoFazendeiro.getStatus().equals(Status.PARADO.getDescription())
 								&& !novoFazendeiro.getStatus().equals(Status.CULTIVANDO.getDescription())) {
 							novoFazendeiro.interrupt();
@@ -702,7 +707,7 @@ public class Principal extends JFrame {
 			} else {
 				MinaOuro minaOuro = this.vila.getMinaOuro(numeroMinaOuro);
 				synchronized (minaOuro) {
-					if (minaOuro.getQtdMineradores() < 5) {
+					if (minaOuro.getQtdMineradores() < minaOuro.getCapacidade()) {
 						if (!novoMinerador.getStatus().equals(Status.PARADO.getDescription())
 								&& !novoMinerador.getStatus().equals(Status.MINERANDO.getDescription())) {
 							novoMinerador.interrupt();
@@ -726,7 +731,6 @@ public class Principal extends JFrame {
 				}
 			}
 		}
-
 	}
 
 	public void comandoAldeaoOrar(int aldeao) {
@@ -790,11 +794,11 @@ public class Principal extends JFrame {
 	}
 
 	public void comandoPrefeituraEvoluir(String strEvolucao) {
-		System.out.println("comandoPrefeituraEvoluir(strEvolucao);");
+		this.getVila().getPrefeitura().setTipoEvolucao(strEvolucao);
 	}
 
 	public void comandoTemploEvoluir(String strEvolucao) {
-		System.out.println("comandoTemploEvoluir(strEvolucao);");
+		this.getVila().getTemplo().setTipoEvolucao(strEvolucao);
 	}
 
 	public void comandoTemploLancar() {
