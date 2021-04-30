@@ -143,20 +143,6 @@ public class Vila {
 		return this.minasOuro.size();
 	}
 
-	/*
-	 * Coisas que acontecem na vila
-	 */
-
-//	public void cultivo(Integer idxAldeao, Integer idxFazenda) {
-//		
-//		Integer comidaProduzida = Integer.valueOf(0);	
-//		Aldeao fazendeiro = this.getAldeao(idxAldeao);
-//		Fazenda fazenda = this.getFazenda(idxFazenda);
-//		
-//		fazendeiro.cultivar();
-//		this.prefeitura.addUnidadesComida(comidaProduzida);
-//	}
-//	
 
 	/*
 	 * Massa de dados para teste

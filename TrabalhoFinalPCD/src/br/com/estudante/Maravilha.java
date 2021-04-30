@@ -19,7 +19,6 @@ public class Maravilha extends Thread {
 		while (true) {
 			if (this.construtores.size() > 0) {
 				this.principal.mostrarMaravilha(this.qtdTijolos);
-				System.out.println(this.getQtdConstrutores());
 			}
 		}
 	}
