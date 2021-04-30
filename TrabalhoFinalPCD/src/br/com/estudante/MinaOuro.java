@@ -9,6 +9,7 @@ import br.com.estudante.tela.Principal;
 
 public class MinaOuro {
 	private String nome;
+	private int capacidade;
 	private Principal principal;
 	private String nomeAldeoes;
 	private ArrayList<Aldeao> mineradores = new ArrayList<Aldeao>();
@@ -17,6 +18,7 @@ public class MinaOuro {
 		this.setPrincipal(principal);
 		this.nomeAldeoes = "";
 		setNome(nome);
+		setCapacidade(5);
 	}
 	
 	public String getNome() {
@@ -25,6 +27,14 @@ public class MinaOuro {
 
 	public void setNome(String name) {
 		this.nome = name;
+	}
+	
+	public synchronized int getCapacidade() {
+		return capacidade;
+	}
+
+	public void setCapacidade(int capacidade) {
+		this.capacidade = capacidade;
 	}
 
 	public Principal getPrincipal() {
@@ -48,7 +58,7 @@ public class MinaOuro {
 		this.principal.mostrarMinaOuro(Integer.valueOf(this.getNome()), nomeAldeoes);
 	}
 
-	public void addMinerador(Aldeao aldeao) {
+	public synchronized void addMinerador(Aldeao aldeao) {
 		boolean tem = false;
 		for (Aldeao minerador : mineradores) {
 			if (minerador.equals(aldeao))
@@ -61,7 +71,7 @@ public class MinaOuro {
 		
 	}
 
-	public void removeMinerador(Aldeao aldeao) {
+	public synchronized void removeMinerador(Aldeao aldeao) {
 		this.mineradores.remove(aldeao);
 		this.setNomeAldeoes();
 	}
@@ -70,7 +80,7 @@ public class MinaOuro {
 		return nomeAldeoes;
 	}
 
-	public int getQtdMineradores() {
+	public synchronized int getQtdMineradores() {
 		return this.mineradores.size();
 	}
 

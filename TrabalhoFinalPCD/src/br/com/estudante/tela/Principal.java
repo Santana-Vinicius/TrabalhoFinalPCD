@@ -7,7 +7,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -71,6 +70,7 @@ public class Principal extends JFrame {
 	private JLabel lblMaravilha;
 	private JProgressBar pbMaravilha;
 	private String nomeJogador;
+	private String civilizacao;
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
@@ -84,15 +84,16 @@ public class Principal extends JFrame {
 		initialize();
 		nomeJogador = JOptionPane.showInputDialog(null, "Informe seu nome", "Jogador", JOptionPane.QUESTION_MESSAGE);
 		String[] civilizacoes = { "Acádia", "Babilônia", "Helenística", "Mesopotâmica", "Persa", "Sumária" };
-		String civilizacao = (String) JOptionPane.showInputDialog(null, "Escolha sua civilização", "Jogador",
+		this.civilizacao = (String) JOptionPane.showInputDialog(null, "Escolha sua civilização", "Jogador",
 				JOptionPane.QUESTION_MESSAGE, null, civilizacoes, civilizacoes[0]);
-		this.lblJogador.setText(nomeJogador + " - " + civilizacao);
+		this.lblJogador.setText(nomeJogador + " - " + this.civilizacao);
 
 		/*
 		 * Minhas alteracoes
 		 */
 
 		this.vila = new Vila(this);
+		this.vila.getPrefeitura().start();
 
 		// FIM
 		// ********************************************************************
@@ -488,16 +489,9 @@ public class Principal extends JFrame {
 	// *** Testar - Depois pode apagar ****************************************
 	// ************************************************************************
 	public void testar() {
-		this.mostrarPrefeitura(this.nomeJogador, Color.ORANGE);
-		// this.habilitarTemplo();
+		this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
 		// this.habilitarMaravilha();
 		// this.mostrarMaravilha(444);
-//		List<String> evolucoes = new ArrayList<String>();
-//		evolucoes.add("NUVEM_GAFANHOTOS");
-//		evolucoes.add("MORTE_PRIMOGENITOS");
-//		evolucoes.add("CHUVA_PEDRAS");
-//		this.mostrarAtaques(evolucoes);
-//		this.mostrarTemplo("ffff", Color.MAGENTA);
 
 	}
 	// ************************************************************************
@@ -581,13 +575,13 @@ public class Principal extends JFrame {
 		this.cbTemploLancamentos.removeAllItems();
 		for (String evolucao : evolucoes) {
 			switch (evolucao) {
-			case "NUVEM_GAFANHOTOS":
+			case "Nuvem de gafanhotos":
 				this.cbTemploLancamentos.addItem("Nuvem de gafanhotos");
 				break;
-			case "MORTE_PRIMOGENITOS":
+			case "Morte dos primogênitos":
 				this.cbTemploLancamentos.addItem("Morte dos primogênitos");
 				break;
-			case "CHUVA_PEDRAS":
+			case "Chuva de pedras":
 				this.cbTemploLancamentos.addItem("Chuva de pedras");
 			}
 		}
@@ -605,12 +599,24 @@ public class Principal extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao aldeaoSelecionado = this.vila.getAldeao(aldeao);
-			if (aldeaoSelecionado.getFazenda() != null) {
-				Fazenda fazenda = aldeaoSelecionado.getFazenda();
-				fazenda.removeFazendeiro(aldeaoSelecionado);
+			if (aldeaoSelecionado.getStatus().equals(Status.SACRIFICADO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			} else {
+				if (aldeaoSelecionado.getFazenda() != null) {
+					Fazenda fazenda = aldeaoSelecionado.getFazenda();
+					fazenda.removeFazendeiro(aldeaoSelecionado);
+				} else if (aldeaoSelecionado.getMinaOuro() != null) {
+					MinaOuro minaOuro = aldeaoSelecionado.getMinaOuro();
+					minaOuro.removeMinerador(aldeaoSelecionado);
+				} else if (this.getVila().getMaravilha() != null) {
+					this.getVila().getMaravilha().procuraRemoveConstrutor(aldeaoSelecionado);
+					aldeaoSelecionado.setTipoConstrucao("");
+				} else if (this.getVila().getTemplo() != null) {
+					this.getVila().getTemplo().procuraremoveReligioso(aldeaoSelecionado);
+				}
+				aldeaoSelecionado.setStatus(Status.PARADO);
+				this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
 			}
-			aldeaoSelecionado.setStatus(Status.PARADO);
-			this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
 		}
 
 	}
@@ -620,8 +626,38 @@ public class Principal extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao aldeaoSelecionado = this.vila.getAldeao(aldeao);
-			aldeaoSelecionado.setTipoConstrucao(qual);
-			aldeaoSelecionado.setStatus(Status.CONSTRUINDO);
+			if (aldeaoSelecionado.getStatus().equals(Status.SACRIFICADO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			} else {
+				if (qual.equals("Templo") && this.getVila().getTemplo() != null) {
+
+					this.mostrarMensagemErro("Erro", "Já existe um templo");
+
+				} else {
+					if (!aldeaoSelecionado.getStatus().equals(Status.PARADO.getDescription())
+							&& !aldeaoSelecionado.getStatus().equals(Status.CONSTRUINDO.getDescription())) {
+						aldeaoSelecionado.interrupt();
+						switch (aldeaoSelecionado.getStatus()) {
+						case "Minerando":
+							aldeaoSelecionado.getMinaOuro().removeMinerador(aldeaoSelecionado);
+							break;
+
+						case "Cultivando":
+							aldeaoSelecionado.getFazenda().removeFazendeiro(aldeaoSelecionado);
+							break;
+						case "Orando":
+							this.getVila().getTemplo().removeReligioso(aldeaoSelecionado);
+							break;
+						}
+					}
+					aldeaoSelecionado.setTipoConstrucao(qual);
+					aldeaoSelecionado.setStatus(Status.CONSTRUINDO);
+					this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
+					if (this.getVila().getTemplo() != null)
+						this.habilitarTemplo();
+
+				}
+			}
 		}
 
 	}
@@ -630,20 +666,33 @@ public class Principal extends JFrame {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
-			Fazenda fazenda = this.vila.getFazenda(numeroFazenda);
-			synchronized (fazenda) {
-				if (fazenda.getQtdFazendeiros() < 5) {
-					Aldeao novoFazendeiro = this.vila.getAldeao(aldeao);
-					if (novoFazendeiro.getMinaOuro() != null) {
-						novoFazendeiro.interrupt();
-						novoFazendeiro.getMinaOuro().removeMinerador(novoFazendeiro);
-					}
-					novoFazendeiro.setFazenda(fazenda);
-					fazenda.addFazendeiro(novoFazendeiro);
-					novoFazendeiro.setStatus(Status.CULTIVANDO);
-					this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
-				} else
-					mostrarMensagemErro("Erro", "Quantidade máxima de aldeões na fazenda " + (numeroFazenda + 1));
+			Aldeao novoFazendeiro = this.vila.getAldeao(aldeao);
+			if (novoFazendeiro.getStatus().equals(Status.SACRIFICADO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			} else {
+				Fazenda fazenda = this.vila.getFazenda(numeroFazenda);
+				synchronized (fazenda) {
+					if (fazenda.getQtdFazendeiros() < fazenda.getCapacidade()) {
+						if (!novoFazendeiro.getStatus().equals(Status.PARADO.getDescription())
+								&& !novoFazendeiro.getStatus().equals(Status.CULTIVANDO.getDescription())) {
+							novoFazendeiro.interrupt();
+							switch (novoFazendeiro.getStatus()) {
+							case "Minerando":
+								novoFazendeiro.getMinaOuro().removeMinerador(novoFazendeiro);
+								break;
+
+							case "Orando":
+								this.getVila().getTemplo().removeReligioso(novoFazendeiro);
+								break;
+							}
+						}
+						novoFazendeiro.setFazenda(fazenda);
+						fazenda.addFazendeiro(novoFazendeiro);
+						novoFazendeiro.setStatus(Status.CULTIVANDO);
+						this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
+					} else
+						mostrarMensagemErro("Erro", "Quantidade máxima de aldeões na fazenda " + (numeroFazenda + 1));
+				}
 			}
 		}
 	}
@@ -652,37 +701,89 @@ public class Principal extends JFrame {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
-			MinaOuro minaOuro = this.vila.getMinaOuro(numeroMinaOuro);
-			synchronized (minaOuro) {
-				if (minaOuro.getQtdMineradores() < 5) {
-					Aldeao novoMinerador = this.vila.getAldeao(aldeao);
-					if (novoMinerador.getFazenda() != null) {
-						novoMinerador.interrupt();
-						novoMinerador.getFazenda().removeFazendeiro(novoMinerador);
-					}
-					novoMinerador.setMinaOuro(minaOuro);
-					minaOuro.addMinerador(novoMinerador);
-					novoMinerador.setStatus(Status.MINERANDO);
-					this.mostrarAldeao(aldeao, novoMinerador.getStatus());
-				} else
-					mostrarMensagemErro("Erro", "Quantidade máxima de aldeões na mina de ouro " + (numeroMinaOuro + 1));
+			Aldeao novoMinerador = this.vila.getAldeao(aldeao);
+			if (novoMinerador.getStatus().equals(Status.SACRIFICADO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			} else {
+				MinaOuro minaOuro = this.vila.getMinaOuro(numeroMinaOuro);
+				synchronized (minaOuro) {
+					if (minaOuro.getQtdMineradores() < minaOuro.getCapacidade()) {
+						if (!novoMinerador.getStatus().equals(Status.PARADO.getDescription())
+								&& !novoMinerador.getStatus().equals(Status.MINERANDO.getDescription())) {
+							novoMinerador.interrupt();
+							switch (novoMinerador.getStatus()) {
+							case "Cultivando":
+								novoMinerador.getFazenda().removeFazendeiro(novoMinerador);
+								break;
+
+							case "Orando":
+								this.getVila().getTemplo().removeReligioso(novoMinerador);
+								break;
+							}
+						}
+						novoMinerador.setMinaOuro(minaOuro);
+						minaOuro.addMinerador(novoMinerador);
+						novoMinerador.setStatus(Status.MINERANDO);
+						this.mostrarAldeao(aldeao, novoMinerador.getStatus());
+					} else
+						mostrarMensagemErro("Erro",
+								"Quantidade máxima de aldeões na mina de ouro " + (numeroMinaOuro + 1));
+				}
 			}
 		}
-
 	}
 
 	public void comandoAldeaoOrar(int aldeao) {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
-		else
-			System.out.println("comandoAldeaoOrar(aldeao);");
+		else {
+			Aldeao novoReligioso = this.vila.getAldeao(aldeao);
+			if (novoReligioso.getStatus().equals(Status.SACRIFICADO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			} else {
+				if (this.getVila().getTemplo() != null) {
+					if (!novoReligioso.getStatus().equals(Status.PARADO.getDescription())
+							&& !novoReligioso.getStatus().equals(Status.ORANDO.getDescription())) {
+						novoReligioso.interrupt();
+						switch (novoReligioso.getStatus()) {
+						case "Cultivando":
+							novoReligioso.getFazenda().removeFazendeiro(novoReligioso);
+							break;
+
+						case "Minerando":
+							novoReligioso.getMinaOuro().removeMinerador(novoReligioso);
+							break;
+						}
+					}
+					this.getVila().getTemplo().addReligioso(novoReligioso);
+					novoReligioso.setStatus(Status.ORANDO);
+					this.mostrarAldeao(aldeao, novoReligioso.getStatus());
+				} else
+					this.mostrarMensagemErro("Erro", "O templo ainda não foi criado");
+			}
+		}
 	}
 
 	public void comandoAldeaoSacrificar(int aldeao) {
 		if (aldeao == -1)
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
-		else
-			System.out.println("comandoAldeaoSacrificar(aldeao);");
+		else {
+			Aldeao novoSacrificado = this.vila.getAldeao(aldeao);
+			if (novoSacrificado.getStatus().equals(Status.SACRIFICADO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			} else {
+				if (novoSacrificado.getStatus().equals(Status.ORANDO.getDescription())) {
+					novoSacrificado.interrupt();
+					int oferendaGerada = this.getVila().getTemplo().Sacrificar(novoSacrificado);
+					this.getVila().getPrefeitura().addOferendasFe(oferendaGerada);
+					this.mostrarOferendaFe(this.getVila().getPrefeitura().getOferendasFe());
+					novoSacrificado.setStatus(Status.SACRIFICADO);
+					this.mostrarAldeao(aldeao, novoSacrificado.getStatus());
+				} else
+					this.mostrarMensagemErro("Erro", "Somente aldeões religiosos podem ser sacrificados");
+			}
+			System.out.println("Status 4: " + novoSacrificado.getStatus());
+		}
 	}
 
 	public void comandoPrefeituraCriarAldeao() {
@@ -693,11 +794,11 @@ public class Principal extends JFrame {
 	}
 
 	public void comandoPrefeituraEvoluir(String strEvolucao) {
-		System.out.println("comandoPrefeituraEvoluir(strEvolucao);");
+		this.getVila().getPrefeitura().setTipoEvolucao(strEvolucao);
 	}
 
 	public void comandoTemploEvoluir(String strEvolucao) {
-		System.out.println("comandoTemploEvoluir(strEvolucao);");
+		this.getVila().getTemplo().setTipoEvolucao(strEvolucao);
 	}
 
 	public void comandoTemploLancar() {
@@ -708,5 +809,9 @@ public class Principal extends JFrame {
 
 	public Vila getVila() {
 		return vila;
+	}
+
+	public String getCivilizacao() {
+		return this.civilizacao;
 	}
 }

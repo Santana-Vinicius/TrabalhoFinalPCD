@@ -7,6 +7,12 @@ import br.com.estudante.tela.Principal;
 public class Vila {
 	private Principal principal;
 	private Prefeitura prefeitura;
+	private Maravilha maravilha;
+	private boolean protecaoGafanhotos;
+	private boolean protecaoPrimogenitos;
+	private boolean protecaoPedras;
+
+	private Templo templo;
 	private ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
 	private ArrayList<Fazenda> fazendas = new ArrayList<Fazenda>();
 	private ArrayList<MinaOuro> minasOuro = new ArrayList<MinaOuro>();
@@ -20,6 +26,9 @@ public class Vila {
 		setAldeoes(geraAldeoes());
 		addFazenda(new Fazenda("0", this.principal));
 		addMinaOuro(new MinaOuro("0", this.principal));
+		setProtecaoGafanhotos(false);
+		setProtecaoPrimogenitos(false);
+		setProtecaoPedras(false);
 	}
 
 	public Vila() {
@@ -28,6 +37,30 @@ public class Vila {
 	/*
 	 * To string
 	 */
+
+	public boolean isProtecaoGafanhotos() {
+		return protecaoGafanhotos;
+	}
+
+	public void setProtecaoGafanhotos(boolean protecaoGafanhotos) {
+		this.protecaoGafanhotos = protecaoGafanhotos;
+	}
+
+	public boolean isProtecaoPrimogenitos() {
+		return protecaoPrimogenitos;
+	}
+
+	public void setProtecaoPrimogenitos(boolean protecaoPrimogenitos) {
+		this.protecaoPrimogenitos = protecaoPrimogenitos;
+	}
+
+	public boolean isProtecaoPedras() {
+		return protecaoPedras;
+	}
+
+	public void setProtecaoPedras(boolean protecaoPedras) {
+		this.protecaoPedras = protecaoPedras;
+	}
 
 	public String toString() {
 		return "UNIDADES DE COMIDA: " + prefeitura.getUnidadesComida() + "\n" + "UNIDADES DE OURO: "
@@ -72,6 +105,25 @@ public class Vila {
 	public void addFazenda(Fazenda novo) {
 		this.fazendas.add(novo);
 		principal.adicionarFazenda(novo.getNome(), "");
+	}
+
+	public Templo getTemplo() {
+		return templo;
+	}
+
+	public void setTemplo(Templo templo) {
+		this.templo = templo;
+		this.getTemplo().start();
+	}
+
+	public Maravilha getMaravilha() {
+		return maravilha;
+	}
+
+	public void setMaravilha(Maravilha maravilha) {
+		this.maravilha = maravilha;
+		this.principal.habilitarMaravilha();
+		maravilha.start();
 	}
 
 	public MinaOuro getMinaOuro(Integer index) {
@@ -119,4 +171,21 @@ public class Vila {
 		return aldeoes;
 	}
 
+	public void subirNivelAldeoes(int nivel) {
+		for (Aldeao aldeao : this.aldeoes) {
+			aldeao.setNivel(nivel);
+		}
+	}
+
+	public void subirNivelFazenda() {
+		for (Fazenda fazenda : this.fazendas) {
+			fazenda.setCapacidade(10);
+		}
+	}
+
+	public void subirNivelMinasDeOuro() {
+		for (MinaOuro minaOuro : this.minasOuro) {
+			minaOuro.setCapacidade(10);
+		}
+	}
 }

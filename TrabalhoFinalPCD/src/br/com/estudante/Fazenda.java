@@ -9,6 +9,7 @@ import br.com.estudante.tela.Principal;
 
 public class Fazenda {
 	private String nome;
+	private int capacidade;
 	private Principal principal;
 	private String nomeAldeoes;
 	private ArrayList<Aldeao> fazendeiros = new ArrayList<Aldeao>();
@@ -17,6 +18,7 @@ public class Fazenda {
 		this.setPrincipal(principal);
 		this.nomeAldeoes = "";
 		setNome(nome);
+		setCapacidade(5);
 	}
 
 	/*
@@ -38,19 +40,26 @@ public class Fazenda {
 		this.principal = principal;
 	}
 
-	public void setNomeAldeoes() {
-		synchronized (this) {
-			this.nomeAldeoes = "";
-			SortedSet<String> nomes = new TreeSet<String>();
+	public synchronized int getCapacidade() {
+		return capacidade;
+	}
 
-			for (Aldeao fazendeiro : fazendeiros)
-				nomes.add(String.valueOf(Integer.valueOf(fazendeiro.getNome()) + 1));
+	public void setCapacidade(int capacidade) {
+		this.capacidade = capacidade;
+	}
 
-			for (String nomeAldeao : nomes) {
-				this.nomeAldeoes += nomeAldeao + " ";
-			}
-			this.principal.mostrarFazenda(Integer.valueOf(this.getNome()), nomeAldeoes);
+	public synchronized void setNomeAldeoes() {
+		this.nomeAldeoes = "";
+		SortedSet<String> nomes = new TreeSet<String>();
+
+		for (Aldeao fazendeiro : fazendeiros)
+			nomes.add(String.valueOf(Integer.valueOf(fazendeiro.getNome()) + 1));
+
+		for (String nomeAldeao : nomes) {
+			this.nomeAldeoes += nomeAldeao + " ";
 		}
+		this.principal.mostrarFazenda(Integer.valueOf(this.getNome()), nomeAldeoes);
+
 	}
 
 	public synchronized void addFazendeiro(Aldeao aldeao) {
