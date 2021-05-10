@@ -2,23 +2,23 @@ package br.com.estudante;
 
 import java.util.ArrayList;
 
-import br.com.estudante.tela.Principal;
+import br.com.estudante.tela.Tela;
 
 public class Maravilha extends Thread {
 	private ArrayList<Aldeao> construtores = new ArrayList<Aldeao>();
 	private Prefeitura prefeitura;
-	private Principal principal;
+	private Tela tela;
 	private int qtdTijolos = 0;
 
-	Maravilha(Prefeitura prefeitura, Principal principal) {
+	Maravilha(Prefeitura prefeitura, Tela tela) {
 		setPrefeitura(prefeitura);
-		setPrincipal(principal);
+		setPrincipal(tela);
 	}
 
 	public void run() {
 		while (true) {
 			if (this.construtores.size() > 0) {
-				this.principal.mostrarMaravilha(this.qtdTijolos);
+				this.tela.mostrarMaravilha(this.qtdTijolos);
 				System.out.println(this.getQtdConstrutores());
 			}
 		}
@@ -49,12 +49,12 @@ public class Maravilha extends Thread {
 		this.prefeitura = prefeitura;
 	}
 
-	public Principal getPrincipal() {
-		return principal;
+	public Tela getPrincipal() {
+		return tela;
 	}
 
-	public void setPrincipal(Principal principal) {
-		this.principal = principal;
+	public void setPrincipal(Tela tela) {
+		this.tela = tela;
 	}
 
 	public synchronized int getQtdTijolos() {

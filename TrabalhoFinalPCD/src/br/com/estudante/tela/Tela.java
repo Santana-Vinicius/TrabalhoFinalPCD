@@ -4,11 +4,14 @@ import java.awt.Color;
 import java.awt.Dialog.ModalExclusionType;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.List;
 
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -17,14 +20,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -35,17 +39,41 @@ import br.com.estudante.Fazenda;
 import br.com.estudante.MinaOuro;
 import br.com.estudante.Status;
 import br.com.estudante.Vila;
+import tela.enumerador.SituacaoInicio;
 
-import java.awt.Toolkit;
-
-public class Principal extends JFrame {
-	// Minhas alteracoes
-
+public class Tela extends JFrame {
 	private Vila vila;
-
-	// Edson alteracoes
+	private String civilizacao;
+	private String nomeJogador;
 	private static final long serialVersionUID = 1L;
-	private JLabel lblJogador;
+	private JTabbedPane tpJogo;
+	// *** Inicio *************************************************************
+	private SituacaoInicio situacaoInicio;
+	private JPanel pnJogador;
+	private JTextField tfNome;
+	private JPanel pnCivilizacao;
+	private JComboBox<String> cbCivilizacoes;
+	private JRadioButton rbCriarJogo;
+	private JPanel pnServidor;
+	private DefaultTableModel tmJogadores;
+	private JTable tblJogadores;
+	private JButton btnCriarJogo;
+	private JButton btnDestruirJogo;
+	private JButton btnIniciarJogo;
+	private JButton btnEncerrarJogo;
+	private JRadioButton rbConectarJogo;
+	private JPanel pnCliente;
+	private JLabel lblIPServidor;
+	private JTextField tfIpServidor;
+	private JButton btnConectar;
+	private JButton btnDesconectar;
+	private JPanel pnMensagens;
+	private JTextArea taMensagens;
+	private JLabel lblMensagem;
+	private JTextField tfMensagem;
+	private JButton btnEnviar;
+	// *** Vila **************************************************************
+	private JPanel pnTP_Vila;
 	private JTable tblAldeoes;
 	private DefaultTableModel tmAldeoes;
 	private JComboBox<String> cbFazenda;
@@ -69,37 +97,29 @@ public class Principal extends JFrame {
 	private JPanel pnMaravilha;
 	private JLabel lblMaravilha;
 	private JProgressBar pbMaravilha;
-	private String nomeJogador;
-	private String civilizacao;
 
 	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> {
-			Principal window = new Principal();
-			window.setVisible(true);
-		});
+		Tela principal = new Tela();
+		principal.setVisible(true);
 	}
 
-	public Principal() {
-		setIconImage(Toolkit.getDefaultToolkit().getImage(Principal.class.getResource("/tela/img/icone.png")));
+	public Tela() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage(Tela.class.getResource("/tela/img/icone.png")));
 		initialize();
-		nomeJogador = JOptionPane.showInputDialog(null, "Informe seu nome", "Jogador", JOptionPane.QUESTION_MESSAGE);
-		String[] civilizacoes = { "Acádia", "Babilônia", "Helenística", "Mesopotâmica", "Persa", "Sumária" };
-		this.civilizacao = (String) JOptionPane.showInputDialog(null, "Escolha sua civilização", "Jogador",
-				JOptionPane.QUESTION_MESSAGE, null, civilizacoes, civilizacoes[0]);
-		this.lblJogador.setText(nomeJogador + " - " + this.civilizacao);
-
-		/*
-		 * Minhas alteracoes
-		 */
-
 		this.vila = new Vila(this);
 		this.vila.getPrefeitura().start();
+		this.iniciar();
+		this.testarInicio();
+	}
 
-		// FIM
-		// ********************************************************************
-		// *** Testar - Depois pode apagar ************************************
-		this.testar();
-		// ********************************************************************
+	// Getters and Setters
+
+	public Vila getVila() {
+		return vila;
+	}
+
+	public String getCivilizacao() {
+		return this.civilizacao;
 	}
 
 	@SuppressWarnings("serial")
@@ -119,46 +139,178 @@ public class Principal extends JFrame {
 		DefaultTableCellRenderer dtcrAldeaoAcao = new DefaultTableCellRenderer() {
 			public void setValue(Object valor) {
 				String v = valor.toString();
-				if (v.equals("Parado"))
+				if (v.equals("parado"))
 					setBackground(Color.YELLOW);
-				else if (v.equals("Orando"))
+				else if (v.equals("orando"))
 					setBackground(new Color(135, 206, 235));
-				else if (v.equals("Sacrificado"))
+				else if (v.equals("sacrificado"))
 					setBackground(Color.RED);
-				else if (v.contains("Cultivando"))
+				else if (v.contains("cultivando"))
 					setBackground(Color.GREEN);
-				else if (v.contains("Minerando"))
+				else if (v.contains("minerando"))
 					setBackground(Color.ORANGE);
-				else if (v.contains("Construindo"))
+				else if (v.contains("construindo"))
 					setBackground(Color.LIGHT_GRAY);
 				else
-					setBackground(Color.ORANGE);
+					setBackground(Color.BLACK);
 				super.setValue(valor);
 			}
 		};
 
 		// *** Componentes ****************************************************
 
-		JTabbedPane tpJogo = new JTabbedPane(JTabbedPane.TOP);
-		tpJogo.setBounds(10, 10, 850, 665);
-		this.getContentPane().add(tpJogo);
+		this.tpJogo = new JTabbedPane(JTabbedPane.TOP);
+		this.tpJogo.setBounds(10, 10, 850, 665);
+		this.getContentPane().add(this.tpJogo);
 
 		JPanel pnTP_Inicio = new JPanel();
 		pnTP_Inicio.setLayout(null);
-		tpJogo.addTab("Início", null, pnTP_Inicio, null);
+		this.tpJogo.addTab("Início", null, pnTP_Inicio, null);
 
-		JPanel pnJogador = new JPanel();
-		pnJogador.setBorder(new TitledBorder(null, "Jogador", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		pnJogador.setBounds(10, 10, 250, 51);
-		pnTP_Inicio.add(pnJogador);
+		// *** Inicio *********************************************************
 
-		lblJogador = new JLabel("Jogador");
-		lblJogador.setFont(new Font("Tahoma", Font.BOLD, 12));
-		pnJogador.add(lblJogador);
+		this.pnJogador = new JPanel();
+		this.pnJogador.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Nome",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnJogador.setBounds(10, 10, 300, 51);
+		this.pnJogador.setLayout(null);
+		pnTP_Inicio.add(this.pnJogador);
 
-		JPanel pnTP_Vila = new JPanel();
-		pnTP_Vila.setLayout(null);
-		tpJogo.addTab("Vila", null, pnTP_Vila, null);
+		this.tfNome = new JTextField();
+		this.tfNome.setBounds(10, 17, 280, 20);
+		this.pnJogador.add(this.tfNome);
+
+		this.pnCivilizacao = new JPanel();
+		this.pnCivilizacao.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Civiliza\u00E7\u00E3o", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnCivilizacao.setBounds(320, 10, 300, 51);
+		this.pnCivilizacao.setLayout(null);
+		pnTP_Inicio.add(this.pnCivilizacao);
+
+		this.cbCivilizacoes = new JComboBox<String>();
+		this.cbCivilizacoes.setBounds(10, 17, 280, 21);
+		this.cbCivilizacoes.addItem("Acádia");
+		this.cbCivilizacoes.addItem("Babilônia");
+		this.cbCivilizacoes.addItem("Helenística");
+		this.cbCivilizacoes.addItem("Mesopotâmica");
+		this.cbCivilizacoes.addItem("Persa");
+		this.cbCivilizacoes.addItem("Sumária");
+		this.pnCivilizacao.add(this.cbCivilizacoes);
+
+		String[] colunasJogadores = { "Jogador", "Civilização", "IP", "Situação" };
+		this.tmJogadores = (new DefaultTableModel(null, colunasJogadores) {
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		});
+		this.tblJogadores = new JTable(this.tmJogadores);
+		this.tblJogadores.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		this.tblJogadores.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		this.tblJogadores.getColumnModel().getColumn(0).setResizable(false);
+		this.tblJogadores.getColumnModel().getColumn(0).setPreferredWidth(150);
+		this.tblJogadores.getColumnModel().getColumn(1).setResizable(false);
+		this.tblJogadores.getColumnModel().getColumn(1).setPreferredWidth(120);
+		this.tblJogadores.getColumnModel().getColumn(2).setResizable(false);
+		this.tblJogadores.getColumnModel().getColumn(2).setPreferredWidth(120);
+		this.tblJogadores.getColumnModel().getColumn(3).setResizable(false);
+		this.tblJogadores.getColumnModel().getColumn(3).setPreferredWidth(417);
+		this.tblJogadores.setEnabled(false);
+		JScrollPane spJogadores = new JScrollPane(this.tblJogadores);
+		spJogadores.setBounds(10, 72, 825, 149);
+		spJogadores.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		pnTP_Inicio.add(spJogadores);
+
+		this.rbCriarJogo = new JRadioButton("Criar jogo");
+		this.rbCriarJogo.setSelected(true);
+		this.rbCriarJogo.setBounds(20, 227, 82, 21);
+		pnTP_Inicio.add(this.rbCriarJogo);
+
+		this.pnServidor = new JPanel();
+		this.pnServidor.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		this.pnServidor.setBounds(10, 237, 825, 47);
+		this.pnServidor.setLayout(null);
+		pnTP_Inicio.add(this.pnServidor);
+
+		this.btnCriarJogo = new JButton("Criar novo jogo");
+		this.btnCriarJogo.setBounds(10, 15, 130, 21);
+		this.pnServidor.add(this.btnCriarJogo);
+
+		this.btnDestruirJogo = new JButton("Destruir Jogo");
+		this.btnDestruirJogo.setBounds(150, 15, 130, 21);
+		this.pnServidor.add(this.btnDestruirJogo);
+
+		this.btnIniciarJogo = new JButton("Iniciar Jogo");
+		this.btnIniciarJogo.setBounds(290, 15, 130, 21);
+		this.pnServidor.add(this.btnIniciarJogo);
+
+		this.btnEncerrarJogo = new JButton("Encerrar jogo");
+		this.btnEncerrarJogo.setBounds(430, 15, 130, 21);
+		this.pnServidor.add(this.btnEncerrarJogo);
+
+		this.rbConectarJogo = new JRadioButton("Conectar a um jogo");
+		this.rbConectarJogo.setBounds(20, 290, 135, 21);
+		pnTP_Inicio.add(this.rbConectarJogo);
+
+		ButtonGroup bgCriarConectar = new ButtonGroup();
+		bgCriarConectar.add(this.rbCriarJogo);
+		bgCriarConectar.add(this.rbConectarJogo);
+
+		this.pnCliente = new JPanel();
+		this.pnCliente.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		this.pnCliente.setBounds(10, 300, 825, 65);
+		this.pnCliente.setLayout(null);
+		pnTP_Inicio.add(this.pnCliente);
+
+		this.lblIPServidor = new JLabel("IP do computador que criou o jogo");
+		this.lblIPServidor.setBounds(10, 15, 249, 13);
+		this.pnCliente.add(this.lblIPServidor);
+
+		this.tfIpServidor = new JTextField();
+		this.tfIpServidor.setBounds(10, 30, 249, 21);
+		this.pnCliente.add(this.tfIpServidor);
+
+		this.btnConectar = new JButton("Conectar");
+		this.btnConectar.setBounds(270, 30, 130, 21);
+		this.pnCliente.add(this.btnConectar);
+
+		this.btnDesconectar = new JButton("Desconectar");
+		this.btnDesconectar.setBounds(410, 30, 130, 21);
+		this.pnCliente.add(this.btnDesconectar);
+
+		this.pnMensagens = new JPanel();
+		this.pnMensagens.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Mensagens",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		this.pnMensagens.setBounds(10, 375, 825, 253);
+		this.pnMensagens.setLayout(null);
+		pnTP_Inicio.add(this.pnMensagens);
+
+		this.taMensagens = new JTextArea();
+		this.taMensagens.setEditable(false);
+		JScrollPane sbMensagens = new JScrollPane(this.taMensagens, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		sbMensagens.setBounds(new Rectangle(10, 20, 805, 193));
+		this.pnMensagens.add(sbMensagens);
+
+		this.lblMensagem = new JLabel("Mensagem");
+		this.lblMensagem.setBounds(10, 223, 65, 13);
+		this.pnMensagens.add(this.lblMensagem);
+
+		this.tfMensagem = new JTextField();
+		this.tfMensagem.setBounds(85, 220, 590, 21);
+		this.pnMensagens.add(this.tfMensagem);
+
+		this.btnEnviar = new JButton("Enviar");
+		this.btnEnviar.setBounds(685, 220, 130, 21);
+		this.pnMensagens.add(this.btnEnviar);
+
+		// *** Vila ***********************************************************
+
+		this.pnTP_Vila = new JPanel();
+		this.pnTP_Vila.setLayout(null);
+		this.tpJogo.addTab("Vila", null, this.pnTP_Vila, null);
 
 		JPanel pnAldeao = new JPanel();
 		pnAldeao.setLayout(null);
@@ -166,7 +318,7 @@ public class Principal extends JFrame {
 				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
 				"Alde\u00F5es", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnAldeao.setBounds(10, 10, 270, 620);
-		pnTP_Vila.add(pnAldeao);
+		this.pnTP_Vila.add(pnAldeao);
 
 		String[] colunasAldeoes = { "Nº", "Ação" };
 		this.tmAldeoes = (new DefaultTableModel(null, colunasAldeoes) {
@@ -174,7 +326,6 @@ public class Principal extends JFrame {
 				return false;
 			}
 		});
-
 		this.tblAldeoes = new JTable(this.tmAldeoes);
 		this.tblAldeoes.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		this.tblAldeoes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -184,7 +335,6 @@ public class Principal extends JFrame {
 		this.tblAldeoes.getColumnModel().getColumn(0).setPreferredWidth(30);
 		this.tblAldeoes.getColumnModel().getColumn(1).setResizable(false);
 		this.tblAldeoes.getColumnModel().getColumn(1).setPreferredWidth(202);
-
 		JScrollPane spAldeoes = new JScrollPane(this.tblAldeoes);
 		spAldeoes.setBounds(10, 20, 250, 460);
 		spAldeoes.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -236,7 +386,7 @@ public class Principal extends JFrame {
 				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Fazendas",
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnFazenda.setBounds(290, 10, 270, 305);
-		pnTP_Vila.add(pnFazenda);
+		this.pnTP_Vila.add(pnFazenda);
 
 		String[] colunasFazendas = { "Nº", "Aldeões" };
 		this.tmFazendas = (new DefaultTableModel(null, colunasFazendas) {
@@ -244,7 +394,6 @@ public class Principal extends JFrame {
 				return false;
 			}
 		});
-
 		this.tblFazendas = new JTable(this.tmFazendas);
 		this.tblFazendas.setRowSelectionAllowed(false);
 		this.tblFazendas.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -253,7 +402,6 @@ public class Principal extends JFrame {
 		this.tblFazendas.getColumnModel().getColumn(0).setPreferredWidth(30);
 		this.tblFazendas.getColumnModel().getColumn(1).setResizable(false);
 		this.tblFazendas.getColumnModel().getColumn(1).setPreferredWidth(202);
-
 		JScrollPane spFazendas = new JScrollPane(this.tblFazendas);
 		spFazendas.setBounds(10, 20, 250, 275);
 		spFazendas.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -265,7 +413,7 @@ public class Principal extends JFrame {
 				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
 				"Minas de ouro", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnMinaOuro.setBounds(290, 325, 270, 305);
-		pnTP_Vila.add(pnMinaOuro);
+		this.pnTP_Vila.add(pnMinaOuro);
 
 		String[] colunasMinas = { "Nº", "Aldeões" };
 		this.tmMinasOuro = (new DefaultTableModel(null, colunasMinas) {
@@ -273,7 +421,6 @@ public class Principal extends JFrame {
 				return false;
 			}
 		});
-
 		this.tblMinasOuro = new JTable(this.tmMinasOuro);
 		this.tblMinasOuro.setRowSelectionAllowed(false);
 		this.tblMinasOuro.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -282,7 +429,6 @@ public class Principal extends JFrame {
 		this.tblMinasOuro.getColumnModel().getColumn(0).setPreferredWidth(30);
 		this.tblMinasOuro.getColumnModel().getColumn(1).setResizable(false);
 		this.tblMinasOuro.getColumnModel().getColumn(1).setPreferredWidth(202);
-
 		JScrollPane spMinas = new JScrollPane(this.tblMinasOuro);
 		spMinas.setBounds(10, 20, 250, 275);
 		spMinas.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -294,7 +440,7 @@ public class Principal extends JFrame {
 				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
 				"Prefeitura", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		pnPrefeitura.setBounds(570, 10, 270, 175);
-		pnTP_Vila.add(pnPrefeitura);
+		this.pnTP_Vila.add(pnPrefeitura);
 
 		JPanel pnComida = new JPanel();
 		((FlowLayout) pnComida.getLayout()).setAlignment(FlowLayout.LEFT);
@@ -343,7 +489,7 @@ public class Principal extends JFrame {
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnTemplo.setBounds(570, 195, 270, 225);
 		this.pnTemplo.setEnabled(false);
-		pnTP_Vila.add(this.pnTemplo);
+		this.pnTP_Vila.add(this.pnTemplo);
 
 		this.pnOferenda = new JPanel();
 		((FlowLayout) this.pnOferenda.getLayout()).setAlignment(FlowLayout.LEFT);
@@ -403,11 +549,11 @@ public class Principal extends JFrame {
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		this.pnMaravilha.setBounds(570, 430, 270, 200);
 		this.pnMaravilha.setEnabled(false);
-		pnTP_Vila.add(this.pnMaravilha);
+		this.pnTP_Vila.add(this.pnMaravilha);
 
 		this.lblMaravilha = new JLabel();
 		this.lblMaravilha.setBounds(10, 20, 215, 170);
-		this.lblMaravilha.setIcon(new ImageIcon(Principal.class.getResource("/tela/img/maravilha.png")));
+		this.lblMaravilha.setIcon(new ImageIcon(Tela.class.getResource("/tela/img/maravilha.png")));
 		this.lblMaravilha.setEnabled(false);
 		this.pnMaravilha.add(this.lblMaravilha);
 
@@ -419,9 +565,75 @@ public class Principal extends JFrame {
 		this.pbMaravilha.setEnabled(false);
 		this.pnMaravilha.add(pbMaravilha);
 
-		tpJogo.setSelectedIndex(1);
+		this.situacaoInicio = SituacaoInicio.INICIAL_CRIAR;
+		this.habilitarInicio();
 
 		// *** Eventos ********************************************************
+		// *** Inicio *********************************************************
+
+		this.rbCriarJogo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				situacaoInicio = SituacaoInicio.INICIAL_CRIAR;
+				habilitarInicio();
+			}
+		});
+
+		this.rbConectarJogo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				situacaoInicio = SituacaoInicio.INICIAL_CONECTAR;
+				habilitarInicio();
+			}
+		});
+
+		this.btnCriarJogo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoCriarJogo(tfNome.getText(), cbCivilizacoes.getSelectedItem().toString());
+			}
+		});
+
+		this.btnDestruirJogo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoDestruirJogo();
+			}
+		});
+
+		this.btnIniciarJogo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoIniciarJogo();
+			}
+		});
+
+		this.btnEncerrarJogo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoEncerrarJogo();
+			}
+		});
+
+		this.btnConectar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoConectar(tfNome.getText(), cbCivilizacoes.getSelectedItem().toString(), tfIpServidor.getText());
+			}
+		});
+
+		this.btnDesconectar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoDesconectar();
+			}
+		});
+
+		this.tfMensagem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoEnviarMensagem(tfMensagem.getText());
+			}
+		});
+
+		this.btnEnviar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				comandoEnviarMensagem(tfMensagem.getText());
+			}
+		});
+
+		// *** Vila **********************************************************
 
 		btnAldeaoParar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -479,7 +691,8 @@ public class Principal extends JFrame {
 
 		btnTemploLancar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				comandoTemploLancar();
+				comandoTemploLancar(cbTemploLancamentos.getSelectedItem().toString(),
+						cbTemploInimigo.getSelectedItem().toString());
 			}
 		});
 
@@ -488,17 +701,136 @@ public class Principal extends JFrame {
 	// ************************************************************************
 	// *** Testar - Depois pode apagar ****************************************
 	// ************************************************************************
-	public void testar() {
+	public void iniciar() {
 		this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
-		// this.habilitarMaravilha();
-		// this.mostrarMaravilha(444);
+	}
 
+	public void testarInicio() {
+//		this.adicionarJogador("Jose", "Brasileiro", "100.200.300.400", "vivo");
+//		this.mostrarSituacaoJogador(1, "morto");
+//		this.adicionarMensagem("oi");
+//		this.adicionarMensagem("tudo bem?");
 	}
 	// ************************************************************************
 	// ************************************************************************
 	// ************************************************************************
 
 	// *** Entrada=Apresentação - altera valores dos componentes **************
+	// *** Inicio ************************************************************
+
+	public void adicionarJogador(String jogador, String civilizacao, String ip, String situacao) {
+		String[] linha = { jogador, civilizacao, ip, situacao };
+		this.tmJogadores.addRow(linha);
+	}
+
+	public void mostrarSituacaoJogador(int jogadorLinha, String situacao) {
+		this.tmJogadores.setValueAt(situacao, jogadorLinha - 1, 3);
+	}
+
+	public void removerJogador(int jogadorLinha) {
+		this.tmJogadores.removeRow(jogadorLinha);
+	}
+
+	public void limparJogadores() {
+		this.tmJogadores.setRowCount(0);
+	}
+
+	public void adicionarMensagem(String mensagem) {
+		this.taMensagens.insert(mensagem + "\n", 0);
+	}
+
+	public void limparMensagens() {
+		this.taMensagens.setText("");
+	}
+
+	private void habilitarInicio() {
+		this.desabilitarInicio();
+		switch (this.situacaoInicio) {
+		case INICIAL_CRIAR:
+			this.pnJogador.setEnabled(true);
+			this.tfNome.setEnabled(true);
+			this.pnCivilizacao.setEnabled(true);
+			this.cbCivilizacoes.setEnabled(true);
+			this.rbCriarJogo.setEnabled(true);
+			this.pnServidor.setEnabled(true);
+			this.btnCriarJogo.setEnabled(true);
+			this.rbConectarJogo.setEnabled(true);
+			this.tpJogo.setEnabledAt(1, true);
+			this.tpJogo.setEnabledAt(1, false);
+			break;
+		case INICIAL_CONECTAR:
+			this.pnJogador.setEnabled(true);
+			this.tfNome.setEnabled(true);
+			this.pnCivilizacao.setEnabled(true);
+			this.cbCivilizacoes.setEnabled(true);
+			this.rbCriarJogo.setEnabled(true);
+			this.pnServidor.setEnabled(true);
+			this.rbConectarJogo.setEnabled(true);
+			this.pnCliente.setEnabled(true);
+			this.lblIPServidor.setEnabled(true);
+			this.tfIpServidor.setEnabled(true);
+			this.btnConectar.setEnabled(true);
+			break;
+		case CRIAR_CRIADO:
+			this.pnServidor.setEnabled(true);
+			this.btnDestruirJogo.setEnabled(true);
+			this.btnIniciarJogo.setEnabled(true);
+			this.pnMensagens.setEnabled(true);
+			this.taMensagens.setEnabled(true);
+			this.lblMensagem.setEnabled(true);
+			this.tfMensagem.setEnabled(true);
+			this.btnEnviar.setEnabled(true);
+			this.tpJogo.setEnabledAt(1, true);
+			this.tpJogo.setEnabledAt(1, false);
+			break;
+		case CRIAR_INICIADO:
+			this.pnServidor.setEnabled(true);
+			this.btnEncerrarJogo.setEnabled(true);
+			this.pnMensagens.setEnabled(true);
+			this.taMensagens.setEnabled(true);
+			this.lblMensagem.setEnabled(true);
+			this.tfMensagem.setEnabled(true);
+			this.btnEnviar.setEnabled(true);
+			this.tpJogo.setEnabledAt(1, true);
+			break;
+		case CONECTADO:
+			this.pnCliente.setEnabled(true);
+			this.btnDesconectar.setEnabled(true);
+			this.pnMensagens.setEnabled(true);
+			this.taMensagens.setEnabled(true);
+			this.lblMensagem.setEnabled(true);
+			this.tfMensagem.setEnabled(true);
+			this.btnEnviar.setEnabled(true);
+			this.tpJogo.setEnabledAt(1, true);
+		}
+	}
+
+	private void desabilitarInicio() {
+		this.pnJogador.setEnabled(false);
+		this.tfNome.setEnabled(false);
+		this.pnCivilizacao.setEnabled(false);
+		this.cbCivilizacoes.setEnabled(false);
+		this.rbCriarJogo.setEnabled(false);
+		this.pnServidor.setEnabled(false);
+		this.btnCriarJogo.setEnabled(false);
+		this.btnDestruirJogo.setEnabled(false);
+		this.btnIniciarJogo.setEnabled(false);
+		this.btnEncerrarJogo.setEnabled(false);
+		this.rbConectarJogo.setEnabled(false);
+		this.pnCliente.setEnabled(false);
+		this.lblIPServidor.setEnabled(false);
+		this.tfIpServidor.setEnabled(false);
+		this.btnConectar.setEnabled(false);
+		this.btnDesconectar.setEnabled(false);
+		this.pnMensagens.setEnabled(false);
+		this.taMensagens.setEnabled(false);
+		this.lblMensagem.setEnabled(false);
+		this.tfMensagem.setEnabled(false);
+		this.btnEnviar.setEnabled(false);
+		this.tpJogo.setEnabledAt(1, false);
+	}
+
+	// *** Vila ***************************************************************
 
 	public void mostrarMensagemErro(String titulo, String mensagem) {
 		JOptionPane.showMessageDialog(null, mensagem, titulo, JOptionPane.ERROR_MESSAGE);
@@ -592,7 +924,88 @@ public class Principal extends JFrame {
 		this.tfTemplo.setBackground(cor);
 	}
 
+	public void limparInimigos() {
+		this.cbTemploInimigo.removeAllItems();
+	}
+
+	public void adicionarInimigo(String strInimigo) {
+		this.cbTemploInimigo.addItem(strInimigo);
+	}
+
 	// *** Saída=Ações/comandos - informa ação do usuário *********************
+	// *** Inicio ************************************************************
+
+	private void comandoCriarJogo(String nome, String civilizacao) {
+		boolean retorno;
+		if (nome.length() < 2) {
+			mostrarMensagemErro("Erro", "Informe um nome para o jogador");
+			return;
+		}
+		retorno = true; // retorno da criação do jogo
+		if (retorno) {
+			this.adicionarJogador(nome, civilizacao, "100.200.300.400", "aguardando jogadores...");
+			this.situacaoInicio = SituacaoInicio.CRIAR_CRIADO;
+			this.habilitarInicio();
+		}
+	}
+
+	private void comandoDestruirJogo() {
+		this.limparJogadores();
+		this.limparMensagens();
+		this.situacaoInicio = SituacaoInicio.INICIAL_CRIAR;
+		this.habilitarInicio();
+	}
+
+	private void comandoIniciarJogo() {
+		boolean retorno = true; // retorno da iniciação do jogo
+		if (retorno) {
+			this.situacaoInicio = SituacaoInicio.CRIAR_INICIADO;
+			this.habilitarInicio();
+			this.tpJogo.setSelectedIndex(1);
+			this.limparInimigos();
+			this.adicionarInimigo("Inimigo-Persa");
+		}
+	}
+
+	private void comandoEncerrarJogo() {
+		this.limparJogadores();
+		this.limparMensagens();
+		this.situacaoInicio = SituacaoInicio.INICIAL_CRIAR;
+		this.habilitarInicio();
+	}
+
+	private void comandoConectar(String nome, String civilizacao, String ipServidor) {
+		boolean retorno;
+		if (nome.length() < 2) {
+			mostrarMensagemErro("Erro", "Informe um nome para o jogador");
+			return;
+		}
+		if (ipServidor.length() < 5) {
+			mostrarMensagemErro("Erro", "Informe o IP do computador que criou o jogo");
+			return;
+		}
+		retorno = true; // retorno da conexão
+		if (retorno) {
+			this.adicionarJogador(nome, civilizacao, ipServidor, "aguardando iniciar...");
+			this.situacaoInicio = SituacaoInicio.CONECTADO;
+			this.habilitarInicio();
+			this.tpJogo.setSelectedIndex(1);
+		}
+	}
+
+	private void comandoDesconectar() {
+		this.limparJogadores();
+		this.limparMensagens();
+		this.situacaoInicio = SituacaoInicio.INICIAL_CONECTAR;
+		this.habilitarInicio();
+	}
+
+	private void comandoEnviarMensagem(String mensagem) {
+		this.adicionarMensagem(mensagem);
+		this.tfMensagem.setText("");
+	}
+
+	// *** Vila ***************************************************************
 
 	public void comandoAldeaoParar(int aldeao) {
 		if (aldeao == -1)
@@ -650,8 +1063,12 @@ public class Principal extends JFrame {
 							break;
 						}
 					}
+
 					aldeaoSelecionado.setTipoConstrucao(qual);
 					aldeaoSelecionado.setStatus(Status.CONSTRUINDO);
+					synchronized (aldeaoSelecionado) {
+						aldeaoSelecionado.notify();
+					}
 					this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
 					if (this.getVila().getTemplo() != null)
 						this.habilitarTemplo();
@@ -686,9 +1103,12 @@ public class Principal extends JFrame {
 								break;
 							}
 						}
+						novoFazendeiro.setStatus(Status.CULTIVANDO);
+						synchronized (novoFazendeiro) {
+							novoFazendeiro.notify();
+						}
 						novoFazendeiro.setFazenda(fazenda);
 						fazenda.addFazendeiro(novoFazendeiro);
-						novoFazendeiro.setStatus(Status.CULTIVANDO);
 						this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
 					} else
 						mostrarMensagemErro("Erro", "Quantidade máxima de aldeões na fazenda " + (numeroFazenda + 1));
@@ -721,9 +1141,12 @@ public class Principal extends JFrame {
 								break;
 							}
 						}
+						novoMinerador.setStatus(Status.MINERANDO);
+						synchronized (novoMinerador) {
+							novoMinerador.notify();
+						}
 						novoMinerador.setMinaOuro(minaOuro);
 						minaOuro.addMinerador(novoMinerador);
-						novoMinerador.setStatus(Status.MINERANDO);
 						this.mostrarAldeao(aldeao, novoMinerador.getStatus());
 					} else
 						mostrarMensagemErro("Erro",
@@ -755,8 +1178,11 @@ public class Principal extends JFrame {
 							break;
 						}
 					}
-					this.getVila().getTemplo().addReligioso(novoReligioso);
 					novoReligioso.setStatus(Status.ORANDO);
+					synchronized (novoReligioso) {
+						novoReligioso.notify();
+					}
+					this.getVila().getTemplo().addReligioso(novoReligioso);
 					this.mostrarAldeao(aldeao, novoReligioso.getStatus());
 				} else
 					this.mostrarMensagemErro("Erro", "O templo ainda não foi criado");
@@ -801,17 +1227,8 @@ public class Principal extends JFrame {
 		this.getVila().getTemplo().setTipoEvolucao(strEvolucao);
 	}
 
-	public void comandoTemploLancar() {
-		System.out.println("comandoTemploLancar();");
+	public void comandoTemploLancar(String strPraga, String strInimigo) {
+		System.out.println("comandoTemploLancar(" + strPraga + "," + strInimigo + ");");
 	}
 
-	// Getters and Setters
-
-	public Vila getVila() {
-		return vila;
-	}
-
-	public String getCivilizacao() {
-		return this.civilizacao;
-	}
 }

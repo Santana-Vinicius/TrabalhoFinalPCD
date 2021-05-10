@@ -5,17 +5,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import br.com.estudante.Utils.Utils;
-import br.com.estudante.tela.Principal;
+import br.com.estudante.tela.Tela;
 
 public class Fazenda {
 	private String nome;
 	private int capacidade;
-	private Principal principal;
+	private Tela tela;
 	private String nomeAldeoes;
 	private ArrayList<Aldeao> fazendeiros = new ArrayList<Aldeao>();
 
-	Fazenda(String nome, Principal principal) {
-		this.setPrincipal(principal);
+	Fazenda(String nome, Tela tela) {
+		this.setPrincipal(tela);
 		this.nomeAldeoes = "";
 		setNome(nome);
 		setCapacidade(5);
@@ -32,12 +32,12 @@ public class Fazenda {
 		this.nome = name;
 	}
 
-	public Principal getPrincipal() {
-		return principal;
+	public Tela getPrincipal() {
+		return tela;
 	}
 
-	public void setPrincipal(Principal principal) {
-		this.principal = principal;
+	public void setPrincipal(Tela tela) {
+		this.tela = tela;
 	}
 
 	public synchronized int getCapacidade() {
@@ -58,7 +58,7 @@ public class Fazenda {
 		for (String nomeAldeao : nomes) {
 			this.nomeAldeoes += nomeAldeao + " ";
 		}
-		this.principal.mostrarFazenda(Integer.valueOf(this.getNome()), nomeAldeoes);
+		this.tela.mostrarFazenda(Integer.valueOf(this.getNome()), nomeAldeoes);
 
 	}
 

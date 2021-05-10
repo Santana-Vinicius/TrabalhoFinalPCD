@@ -3,7 +3,7 @@ package br.com.estudante;
 import java.awt.Color;
 
 import br.com.estudante.Utils.Utils;
-import br.com.estudante.tela.Principal;
+import br.com.estudante.tela.Tela;
 
 public class Aldeao extends Thread {
 	private String nome, tipoConstrucao; // tipoConstrução -> 0 = nada | 1 = Fazenda | 2 = Mina de Ouro | 3 = Templo | 4
@@ -45,6 +45,9 @@ public class Aldeao extends Thread {
 				break;
 			case "Orando":
 				this.orar();
+				break;
+			case "Parado":
+				this.parar();
 				break;
 			}
 		}
@@ -251,13 +254,13 @@ public class Aldeao extends Thread {
 	}
 
 	private Fazenda construirFazenda() {
-		Principal principal = this.prefeitura.getPrincipal();
+		Tela tela = this.prefeitura.getPrincipal();
 		if (this.prefeitura.getUnidadesComida() >= 100 && this.prefeitura.getUnidadesOuro() >= 500) {
 			try {
 				Thread.sleep(3000);
 				this.prefeitura.addUnidadesComida(-100);
 				this.prefeitura.addUnidadesOuro(-500);
-				return new Fazenda(String.valueOf(principal.getVila().getQtdFazendas()), principal);
+				return new Fazenda(String.valueOf(tela.getVila().getQtdFazendas()), tela);
 			} catch (InterruptedException e) {
 				this.setStatus(Status.PARADO);
 				this.run();
@@ -283,13 +286,13 @@ public class Aldeao extends Thread {
 	}
 
 	private MinaOuro construirMina() {
-		Principal principal = this.prefeitura.getPrincipal();
+		Tela tela = this.prefeitura.getPrincipal();
 		if (this.prefeitura.getUnidadesComida() >= 1000) {
 			try {
 				Thread.sleep(3000);
 				this.prefeitura.addUnidadesComida(-100);
 				this.prefeitura.addUnidadesOuro(-500);
-				return new MinaOuro(String.valueOf(principal.getVila().getQtdMinasOuro()), principal);
+				return new MinaOuro(String.valueOf(tela.getVila().getQtdMinasOuro()), tela);
 			} catch (InterruptedException e) {
 				this.setStatus(Status.PARADO);
 				this.run();
@@ -303,13 +306,13 @@ public class Aldeao extends Thread {
 	}
 
 	private Templo construirTemplo() {
-		Principal principal = this.prefeitura.getPrincipal();
+		Tela tela = this.prefeitura.getPrincipal();
 		if (this.prefeitura.getUnidadesComida() >= 2000 && this.prefeitura.getUnidadesOuro() >= 2000) {
 			try {
 				Thread.sleep(5000); // ALTERAR
 				this.prefeitura.addUnidadesComida(-2000);
 				this.prefeitura.addUnidadesOuro(-2000);
-				return new Templo(principal);
+				return new Templo(tela);
 			} catch (InterruptedException e) {
 				this.setStatus(Status.PARADO);
 				this.run();
@@ -344,6 +347,14 @@ public class Aldeao extends Thread {
 		} catch (InterruptedException e) {
 			this.setStatus(Status.PARADO);
 			this.run();
+		}
+	}
+	
+	public synchronized void parar () {
+		try {
+			this.wait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 

@@ -1,36 +1,36 @@
 package br.com.estudante;
 
-import br.com.estudante.tela.Principal;
+import br.com.estudante.tela.Tela;
 
 public class Prefeitura extends Thread {
 	private static Integer numAldeosCriados = 5;
 	private Integer unidadesComida;
 	private Integer unidadesOuro;
 	private Integer oferendasFe;
-	private Principal principal;
+	private Tela tela;
 	private int nivelAldeoes;
 	private String tipoEvolucao;
 
 	/*
 	 * Constructor
 	 */
-	public Prefeitura(Principal principal) {
-		this.unidadesComida = Integer.valueOf(150);
-		this.unidadesOuro = Integer.valueOf(100);
+	public Prefeitura(Tela tela) {
+		this.unidadesComida = Integer.valueOf(199950);
+		this.unidadesOuro = Integer.valueOf(19900);
 		this.oferendasFe = Integer.valueOf(0);
-		this.principal = principal;
-		this.principal.mostrarComida(this.unidadesComida);
-		this.principal.mostrarOuro(this.unidadesOuro);
-		this.principal.mostrarOferendaFe(this.oferendasFe);
+		this.tela = tela;
+		this.tela.mostrarComida(this.unidadesComida);
+		this.tela.mostrarOuro(this.unidadesOuro);
+		this.tela.mostrarOferendaFe(this.oferendasFe);
 		this.setNivelAldeoes(1);
 		setTipoEvolucao("");
 	}
 
 	public void run() {
 		while (true) {
-			this.principal.mostrarComida(this.unidadesComida);
-			this.principal.mostrarOuro(this.unidadesOuro);
-			this.principal.mostrarOferendaFe(this.oferendasFe);
+			this.tela.mostrarComida(this.unidadesComida);
+			this.tela.mostrarOuro(this.unidadesOuro);
+			this.tela.mostrarOferendaFe(this.oferendasFe);
 			if (this.getTipoEvolucao() != "") {
 				this.evoluir();
 			}
@@ -52,7 +52,7 @@ public class Prefeitura extends Thread {
 		} else
 			this.unidadesComida += unidadesComida;
 
-		this.principal.mostrarComida(this.unidadesComida);
+		this.tela.mostrarComida(this.unidadesComida);
 	}
 
 	public synchronized Integer getUnidadesOuro() {
@@ -71,8 +71,8 @@ public class Prefeitura extends Thread {
 		return oferendasFe;
 	}
 
-	public Principal getPrincipal() {
-		return principal;
+	public Tela getPrincipal() {
+		return tela;
 	}
 
 	public synchronized int getNivelAldeoes() {
@@ -110,7 +110,7 @@ public class Prefeitura extends Thread {
 			this.addUnidadesComida(-100);
 			return novo;
 		}
-		this.principal.mostrarMensagemErro("Recursos insuficientes",
+		this.tela.mostrarMensagemErro("Recursos insuficientes",
 				"Você precisa de mais " + (100 - this.unidadesComida) + " de comida.");
 		return null;
 

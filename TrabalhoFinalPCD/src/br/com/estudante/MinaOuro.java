@@ -5,17 +5,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import br.com.estudante.Utils.Utils;
-import br.com.estudante.tela.Principal;
+import br.com.estudante.tela.Tela;
 
 public class MinaOuro {
 	private String nome;
 	private int capacidade;
-	private Principal principal;
+	private Tela tela;
 	private String nomeAldeoes;
 	private ArrayList<Aldeao> mineradores = new ArrayList<Aldeao>();
 
-	MinaOuro(String nome, Principal principal) {
-		this.setPrincipal(principal);
+	MinaOuro(String nome, Tela tela) {
+		this.setPrincipal(tela);
 		this.nomeAldeoes = "";
 		setNome(nome);
 		setCapacidade(5);
@@ -37,12 +37,12 @@ public class MinaOuro {
 		this.capacidade = capacidade;
 	}
 
-	public Principal getPrincipal() {
-		return principal;
+	public Tela getPrincipal() {
+		return tela;
 	}
 
-	public void setPrincipal(Principal principal) {
-		this.principal = principal;
+	public void setPrincipal(Tela tela) {
+		this.tela = tela;
 	}
 	
 	public void setNomeAldeoes() {
@@ -55,7 +55,7 @@ public class MinaOuro {
 		for (String nomeAldeao : nomes) {
 			this.nomeAldeoes += nomeAldeao + " ";
 		}
-		this.principal.mostrarMinaOuro(Integer.valueOf(this.getNome()), nomeAldeoes);
+		this.tela.mostrarMinaOuro(Integer.valueOf(this.getNome()), nomeAldeoes);
 	}
 
 	public synchronized void addMinerador(Aldeao aldeao) {
