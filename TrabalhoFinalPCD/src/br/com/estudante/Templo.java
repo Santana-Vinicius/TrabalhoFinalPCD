@@ -5,26 +5,26 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import br.com.estudante.tela.Principal;
+import br.com.estudante.tela.Tela;
 
 public class Templo extends Thread {
 	private String nome;
-	private Principal principal;
+	private Tela tela;
 	private String nomeAldeoes;
 	private List<String> ataques = new ArrayList<String>();
 	private ArrayList<Aldeao> religiosos = new ArrayList<Aldeao>();
 	private String tipoEvolucao;
 
-	Templo(Principal principal) {
-		this.setPrincipal(principal);
+	Templo(Tela tela) {
+		this.setPrincipal(tela);
 		this.nomeAldeoes = "";
-		setNome("Templo " + this.principal.getCivilizacao());
+		setNome("Templo " + this.tela.getCivilizacao());
 		setTipoEvolucao("");
 	}
 
 	public void run() {
 		while (true) {
-			this.principal.mostrarOferendaFe(this.principal.getVila().getPrefeitura().getOferendasFe());
+			this.tela.mostrarOferendaFe(this.tela.getVila().getPrefeitura().getOferendasFe());
 			if (this.getTipoEvolucao() != "") {
 				this.evoluir();
 			}
@@ -63,12 +63,12 @@ public class Templo extends Thread {
 		this.ataques.add(ataque);
 	}
 
-	public Principal getPrincipal() {
-		return principal;
+	public Tela getPrincipal() {
+		return tela;
 	}
 
-	public void setPrincipal(Principal principal) {
-		this.principal = principal;
+	public void setPrincipal(Tela tela) {
+		this.tela = tela;
 	}
 
 	public void setNomeAldeoes() {
@@ -120,7 +120,7 @@ public class Templo extends Thread {
 	 */
 
 	private void evoluir() {
-		int oferendasFe = this.principal.getVila().getPrefeitura().getOferendasFe();
+		int oferendasFe = this.tela.getVila().getPrefeitura().getOferendasFe();
 		switch (this.tipoEvolucao) {
 		case "Nuvem de gafanhotos":
 			this.evoluirNuvemGafanhoto(oferendasFe);

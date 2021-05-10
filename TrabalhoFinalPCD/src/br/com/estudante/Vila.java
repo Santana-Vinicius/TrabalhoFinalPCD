@@ -2,10 +2,10 @@ package br.com.estudante;
 
 import java.util.ArrayList;
 
-import br.com.estudante.tela.Principal;
+import br.com.estudante.tela.Tela;
 
 public class Vila {
-	private Principal principal;
+	private Tela tela;
 	private Prefeitura prefeitura;
 	private Maravilha maravilha;
 	private boolean protecaoGafanhotos;
@@ -20,12 +20,12 @@ public class Vila {
 	/*
 	 * Constructor da Vila
 	 */
-	public Vila(Principal principal) {
-		this.principal = principal;
-		this.prefeitura = new Prefeitura(principal);
+	public Vila(Tela tela) {
+		this.tela = tela;
+		this.prefeitura = new Prefeitura(tela);
 		setAldeoes(geraAldeoes());
-		addFazenda(new Fazenda("0", this.principal));
-		addMinaOuro(new MinaOuro("0", this.principal));
+		addFazenda(new Fazenda("0", this.tela));
+		addMinaOuro(new MinaOuro("0", this.tela));
 		setProtecaoGafanhotos(false);
 		setProtecaoPrimogenitos(false);
 		setProtecaoPedras(false);
@@ -85,17 +85,17 @@ public class Vila {
 	public void setAldeoes(ArrayList<Aldeao> aldeoes) {
 		this.aldeoes = aldeoes;
 		for (Aldeao aldeao : aldeoes) {
-			principal.adicionarAldeao(aldeao.getNome(), aldeao.getStatus());
-			principal.mostrarAldeao(Integer.valueOf(aldeao.getNome()), aldeao.getStatus());
+			tela.adicionarAldeao(aldeao.getNome(), aldeao.getStatus());
+			tela.mostrarAldeao(Integer.valueOf(aldeao.getNome()), aldeao.getStatus());
 			aldeao.start();
 		}
 	}
 
 	public void addAldeao(Aldeao novo) {
 		this.aldeoes.add(novo);
-		principal.adicionarAldeao(novo.getNome(), novo.getStatus());
+		tela.adicionarAldeao(novo.getNome(), novo.getStatus());
 		novo.start();
-		principal.mostrarAldeao(Integer.valueOf(novo.getNome()), novo.getStatus());
+		tela.mostrarAldeao(Integer.valueOf(novo.getNome()), novo.getStatus());
 	}
 
 	public Fazenda getFazenda(Integer index) {
@@ -104,7 +104,7 @@ public class Vila {
 
 	public void addFazenda(Fazenda novo) {
 		this.fazendas.add(novo);
-		principal.adicionarFazenda(novo.getNome(), "");
+		tela.adicionarFazenda(novo.getNome(), "");
 	}
 
 	public Templo getTemplo() {
@@ -122,7 +122,7 @@ public class Vila {
 
 	public void setMaravilha(Maravilha maravilha) {
 		this.maravilha = maravilha;
-		this.principal.habilitarMaravilha();
+		this.tela.habilitarMaravilha();
 		maravilha.start();
 	}
 
@@ -132,7 +132,7 @@ public class Vila {
 
 	public void addMinaOuro(MinaOuro novo) {
 		this.minasOuro.add(novo);
-		principal.adicionarMinaOuro(novo.getNome(), "");
+		tela.adicionarMinaOuro(novo.getNome(), "");
 	}
 
 	public int getQtdFazendas() {
@@ -142,7 +142,6 @@ public class Vila {
 	public int getQtdMinasOuro() {
 		return this.minasOuro.size();
 	}
-
 
 	/*
 	 * Massa de dados para teste
