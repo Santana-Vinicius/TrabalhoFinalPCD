@@ -1,5 +1,8 @@
 package br.com.estudante;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import br.com.estudante.tela.Tela;
@@ -12,6 +15,10 @@ public class Vila {
 	private boolean protecaoPrimogenitos;
 	private boolean protecaoPedras;
 
+	private Socket socket;
+	
+
+
 	private Templo templo;
 	private ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
 	private ArrayList<Fazenda> fazendas = new ArrayList<Fazenda>();
@@ -21,6 +28,7 @@ public class Vila {
 	 * Constructor da Vila
 	 */
 	public Vila(Tela tela) {
+		System.out.println("Criando a vila!");
 		this.tela = tela;
 		this.prefeitura = new Prefeitura(tela);
 		setAldeoes(geraAldeoes());
@@ -141,6 +149,21 @@ public class Vila {
 
 	public int getQtdMinasOuro() {
 		return this.minasOuro.size();
+	}
+	
+	
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(int port) {
+		try {
+			this.socket = new Socket("localhost", port);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/*

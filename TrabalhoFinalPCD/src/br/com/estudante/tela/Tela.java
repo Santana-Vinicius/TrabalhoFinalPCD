@@ -8,6 +8,9 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.text.NumberFormat;
 import java.util.List;
 
@@ -36,7 +39,9 @@ import javax.swing.table.DefaultTableModel;
 
 import br.com.estudante.Aldeao;
 import br.com.estudante.Fazenda;
+import br.com.estudante.Jogador;
 import br.com.estudante.MinaOuro;
+import br.com.estudante.Servidor;
 import br.com.estudante.Status;
 import br.com.estudante.Vila;
 import tela.enumerador.SituacaoInicio;
@@ -45,6 +50,7 @@ public class Tela extends JFrame {
 	private Vila vila;
 	private String civilizacao;
 	private String nomeJogador;
+	private Servidor servidor;
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane tpJogo;
 	// *** Inicio *************************************************************
@@ -936,17 +942,32 @@ public class Tela extends JFrame {
 	// *** Inicio ************************************************************
 
 	private void comandoCriarJogo(String nome, String civilizacao) {
-		boolean retorno;
 		if (nome.length() < 2) {
 			mostrarMensagemErro("Erro", "Informe um nome para o jogador");
 			return;
 		}
-		retorno = true; // retorno da criação do jogo
-		if (retorno) {
-			this.adicionarJogador(nome, civilizacao, "100.200.300.400", "aguardando jogadores...");
+		
+		
+		
+		try {
+			this.servidor = new Servidor(this);
+			servidor.start();
+			this.vila.setSocket(12345);
+			Socket socket = this.vila.getSocket();
+			String ipServidor = new String(socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort());
+			ObjectOutputStream saida;
+			saida = new ObjectOutputStream(socket.getOutputStream());
+			saida.writeObject(new Jogador(nome, civilizacao, ipServidor, "aguardando jogadores..."));
+//			this.adicionarJogador(nome, civilizacao, socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort(), "aguardando jogadores...");
 			this.situacaoInicio = SituacaoInicio.CRIAR_CRIADO;
+//			this.mostrarSituacaoJogador(1, "Aguardando inicio");
 			this.habilitarInicio();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
 	}
 
 	private void comandoDestruirJogo() {
@@ -986,10 +1007,22 @@ public class Tela extends JFrame {
 		}
 		retorno = true; // retorno da conexão
 		if (retorno) {
-			this.adicionarJogador(nome, civilizacao, ipServidor, "aguardando iniciar...");
-			this.situacaoInicio = SituacaoInicio.CONECTADO;
-			this.habilitarInicio();
-			this.tpJogo.setSelectedIndex(1);
+			this.vila.setSocket(12345);
+			Socket socket = this.vila.getSocket();
+			try {
+				ObjectOutputStream saida = new ObjectOutputStream(socket.getOutputStream());
+				saida.writeObject(new Jogador(nome, civilizacao, ipServidor, "aguardando jogadores..."));
+				
+//				this.adicionarJogador(nome, civilizacao, ipServidor, "aguardando iniciar...");
+//				this.situacaoInicio = SituacaoInicio.CONECTADO;
+				
+				this.habilitarInicio();
+				this.tpJogo.setSelectedIndex(1);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 	}
 
