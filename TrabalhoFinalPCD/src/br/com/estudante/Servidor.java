@@ -2,6 +2,7 @@ package br.com.estudante;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import br.com.estudante.tela.Tela;
 
 public class Servidor extends Thread {
 	private boolean vivo = true;
-//	private List<ObjectInputStream> vilasConectadas = new ArrayList<ObjectInputStream>();
+	private List<Socket> telas = new ArrayList<Socket>();
 	private List<Jogador> jogadores = new ArrayList<Jogador>();
 	private ServerSocket servidor;
 	private Tela principal;
@@ -27,29 +28,49 @@ public class Servidor extends Thread {
 
 	@Override
 	public void run() {
-		try {
-			while (true) {
-				System.out.println("Servidor Inicializado no IP: " + this.servidor.getInetAddress().getHostAddress()
-						+ ":" + this.servidor.getLocalPort());
+
+		while (true) {
+			System.out.println("Servidor Inicializado no IP: " + this.servidor.getInetAddress().getHostAddress() + ":"
+					+ this.servidor.getLocalPort());
+			try {
 				Socket socket = servidor.accept();
 				ObjectInputStream entrada = new ObjectInputStream(socket.getInputStream());
-				Jogador novo = (Jogador) entrada.readObject();
-				this.jogadores.add(novo);
+				String acao = (String) entrada.readObject();
 
-				principal.adicionarJogador(novo.getNome(), novo.getCivilizacao(), novo.getIpServidor(),
-						novo.getSituacao());
-				principal.mostrarSituacaoJogador(jogadores.size(), novo.getSituacao());
+				switch (acao) {
+				case "Criar jogo":
+					Jogador novo = (Jogador) entrada.readObject();
+					this.jogadores.add(novo);
+					principal.adicionarJogador(novo.getNome(), novo.getCivilizacao(), novo.getIpServidor(),
+							novo.getSituacao());
+					principal.mostrarSituacaoJogador(jogadores.size(), novo.getSituacao());
+					telas.add(socket);
+					acao = "Default";
+					break;
+				case "Conectar":
+					Jogador novoConectar = (Jogador) entrada.readObject();
+					this.jogadores.add(novoConectar);
+					telas.add(socket);
 
-//				ObjectOutputStream saida = new ObjectOutputStream(socket.getOutputStream());
+					principal.adicionarJogador(novoConectar.getNome(), novoConectar.getCivilizacao(),
+							novoConectar.getIpServidor(), novoConectar.getSituacao());
+					principal.mostrarSituacaoJogador(jogadores.size(), novoConectar.getSituacao());
 
-				System.out.println(
-						"Cliente conectado: " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort());
+					ObjectOutputStream saida = new ObjectOutputStream(socket.getOutputStream());
+					saida.writeObject(jogadores);
 
+					
+
+					acao = "Default";
+					break;
+				}
+
+			} catch (IOException e) {
+				System.out.println("Deu erro!");
+			} catch (ClassNotFoundException e) {
+				System.out.println("Class not found!");
 			}
-		} catch (IOException e) {
-			System.out.println("IOException");
-		} catch (ClassNotFoundException e) {
-			System.out.println("Jogador não encontrado!");
+
 		}
 
 	}
