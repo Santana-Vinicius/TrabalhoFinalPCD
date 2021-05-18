@@ -5,12 +5,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import br.com.estudante.tela.Tela;
 
 public class ClienteTCP extends Thread {
 	private Socket conexao;
 	private ObjectOutputStream saida;
+	private ObjectInputStream entrada;
 	private ClienteTCP clienteRecebe;
 	private boolean escutando;
 	private Tela cliente;
@@ -19,47 +21,91 @@ public class ClienteTCP extends Thread {
 		this.cliente = cliente;
 	}
 
-	public ClienteTCP(Socket conexao, Tela cliente) {
+	public ClienteTCP(Socket conexao, Tela cliente, ObjectInputStream entrada, ObjectOutputStream saida) {
 		this.conexao = conexao;
 		this.cliente = cliente;
+		this.entrada = entrada;
+		this.saida = saida;
 		this.escutando = true;
 	}
 
 	public void run() {
-		Jogador jogador;
-		ObjectInputStream entrada = null;
-		int i = 2;
+
 		try {
-			entrada = new ObjectInputStream(this.conexao.getInputStream());
+			Jogador jogador = null;
 			while (this.escutando) {
+				System.out.println("Aqui");
+				System.out.println("Esperando alguém");
 				jogador = (Jogador) entrada.readObject();
-				cliente.adicionarJogador(jogador.getNome(), jogador.getCivilizacao(), jogador.getIpServidor(),
+				int numJogador = (int) entrada.readObject();
+				System.out.println("Recebeu o " + jogador.getNome());
+				this.cliente.adicionarJogador(jogador.getNome(), jogador.getCivilizacao(), jogador.getIpServidor(),
 						jogador.getSituacao());
-				cliente.mostrarSituacaoJogador(i, jogador.getSituacao());
-				i++;
+				this.cliente.mostrarSituacaoJogador(numJogador, jogador.getSituacao());
 			}
+			System.out.println("Aqui");
 			entrada.close();
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public boolean conectar(String host) {
-
+	public void criarServidor(String host, Jogador jogadorHost) {
 		try {
 			this.conexao = new Socket(host, 12345);
-			ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
-			saida.writeObject("Cliente TCP");
-			this.clienteRecebe = new ClienteTCP(conexao, this.cliente);
-			this.clienteRecebe.start();
+			this.saida = new ObjectOutputStream(this.conexao.getOutputStream());
+			this.entrada = new ObjectInputStream(this.conexao.getInputStream());
+			saida.writeObject("Criar jogo");
+			saida.writeObject(jogadorHost);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		return true;
+		this.cliente.adicionarJogador(jogadorHost.getNome(), jogadorHost.getCivilizacao(), jogadorHost.getIpServidor(),
+				"aguardando jogadores...");
+		this.cliente.mostrarSituacaoJogador(1, "aguardando jogadores...");
+		this.clienteRecebe = new ClienteTCP(this.conexao, this.cliente, this.entrada, this.saida);
+		this.clienteRecebe.start();
+	}
 
+	public void conectar(String host, Jogador novoJogador) {
+
+		try {
+			this.conexao = new Socket(host, 12345);
+			this.saida = new ObjectOutputStream(this.conexao.getOutputStream());
+			saida.writeObject("Conectar");
+			saida.writeObject(novoJogador);
+			this.entrada = new ObjectInputStream(this.conexao.getInputStream());
+			try {
+
+				@SuppressWarnings("unchecked")
+				List<Jogador> jogadores = (List<Jogador>) entrada.readObject();
+				System.out.println("Jogadores recebidos:");
+
+				int i = 1;
+				if (jogadores != null) {
+					for (Jogador jogador : jogadores) {
+						System.out.println(i + " - " + jogador.getNome());
+						this.cliente.adicionarJogador(jogador.getNome(), jogador.getCivilizacao(),
+								jogador.getIpServidor(), jogador.getSituacao());
+						this.cliente.mostrarSituacaoJogador(i, jogador.getSituacao());
+						i++;
+					}
+					System.out.println("Adicionei " + (i - 1) + " jogadores");
+				}
+
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.clienteRecebe = new ClienteTCP(this.conexao, this.cliente, this.entrada, this.saida);
+		System.out.println(clienteRecebe + " | " + this.conexao);
+		this.clienteRecebe.start();
 	}
 
 	public void desconectar() {
@@ -84,9 +130,5 @@ public class ClienteTCP extends Thread {
 	public Socket getConexao() {
 		return conexao;
 	}
-	
-	
-	
-	
 
 }

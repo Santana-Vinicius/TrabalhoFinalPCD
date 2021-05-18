@@ -8,10 +8,6 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.text.NumberFormat;
 import java.util.List;
 
@@ -47,8 +43,8 @@ import br.com.estudante.Status;
 import br.com.estudante.Vila;
 import tela.enumerador.SituacaoInicio;
 
-public class Tela extends JFrame{
-	
+public class Tela extends JFrame {
+
 	private Vila vila;
 	private String civilizacao;
 	private String nomeJogador;
@@ -950,29 +946,10 @@ public class Tela extends JFrame{
 			return;
 		}
 
-		try {
-//			this.vila.setSocket(12345);
-		
-			Socket socket = new Socket("localhost", 12345);
-		
-		
-			String ipServidor = new String(socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort());
-			ObjectOutputStream saida;
-			saida = new ObjectOutputStream(socket.getOutputStream());
-			saida.writeObject("Criar jogo");
-			Jogador host = new Jogador(nome, civilizacao, ipServidor, "aguardando jogadores...", this.vila);
-			saida.writeObject(host);
-			this.adicionarJogador(nome, civilizacao, ipServidor, "aguardando jogadores...");
-			this.mostrarSituacaoJogador(1, "aguardando jogadores...");
-			this.situacaoInicio = SituacaoInicio.CRIAR_CRIADO;
-			this.habilitarInicio();
-			this.clienteTCP.conectar("localhost");
-			socket.close();
-			this.clienteTCP.start();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Jogador jogadorHost = new Jogador(nome, civilizacao, "localhost", "aguardando jogadores...", this.vila);
+		this.clienteTCP.criarServidor("localhost", jogadorHost);
+		this.situacaoInicio = SituacaoInicio.CRIAR_CRIADO;
+		this.habilitarInicio();
 
 	}
 
@@ -1013,42 +990,12 @@ public class Tela extends JFrame{
 		}
 		retorno = true; // retorno da conexão
 		if (retorno) {
-//			this.vila.setSocket(12345);
-			
-			try {
-				Socket socket = new Socket("localhost", 12345);
-				ObjectOutputStream saida = new ObjectOutputStream(socket.getOutputStream());
-				saida.writeObject("Conectar");
-				this.situacaoInicio = SituacaoInicio.CONECTADO;
 
-				Jogador jogadorConectado = new Jogador(nome, civilizacao, ipServidor, "aguardando jogadores...", this.vila);
-				saida.writeObject(jogadorConectado);
-
-				ObjectInputStream entrada = new ObjectInputStream(socket.getInputStream());
-				@SuppressWarnings("unchecked")
-				List<Jogador> jogadores = (List<Jogador>) entrada.readObject();
-				System.out.println("Recebi algo!");
-				int i = 1;
-				if (jogadores != null) {
-					System.out.println("Recebeu lista de tamanho: " + jogadores.size());
-					for (Jogador jogador : jogadores) {
-						this.adicionarJogador(jogador.getNome(), jogador.getCivilizacao(), jogador.getIpServidor(),
-								jogador.getSituacao());
-						this.mostrarSituacaoJogador(i, jogador.getSituacao());
-						i++;
-					}
-					System.out.println("Adcionei " + (i-1) + " jogadores");
-				}
-				this.clienteTCP.conectar(ipServidor);
-				socket.close();
-				this.habilitarInicio();
-				this.tpJogo.setSelectedIndex(1);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				System.out.println("Jogador não encontrado!");
-			}
+			Jogador novoJogador = new Jogador(nome, civilizacao, "localhost", "aguardando jogadores...", this.vila);
+			this.clienteTCP.conectar(ipServidor, novoJogador);
+			this.situacaoInicio = SituacaoInicio.CONECTADO;
+			this.habilitarInicio();
+			this.tpJogo.setSelectedIndex(0); //Comeca na tela dos jogadores
 
 		}
 	}
@@ -1289,6 +1236,14 @@ public class Tela extends JFrame{
 
 	public void comandoTemploLancar(String strPraga, String strInimigo) {
 		System.out.println("comandoTemploLancar(" + strPraga + "," + strInimigo + ");");
+	}
+
+	public SituacaoInicio getSituacaoInicio() {
+		return situacaoInicio;
+	}
+
+	public void setSituacaoInicio(SituacaoInicio situacaoInicio) {
+		this.situacaoInicio = situacaoInicio;
 	}
 
 }
