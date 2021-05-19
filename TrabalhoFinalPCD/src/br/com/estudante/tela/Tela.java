@@ -8,6 +8,8 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.text.NumberFormat;
 import java.util.List;
 
@@ -239,6 +241,7 @@ public class Tela extends JFrame {
 		pnTP_Inicio.add(this.pnServidor);
 
 		this.btnCriarJogo = new JButton("Criar novo jogo");
+		btnCriarJogo.setEnabled(false);
 		this.btnCriarJogo.setBounds(10, 15, 130, 21);
 		this.pnServidor.add(this.btnCriarJogo);
 
@@ -711,8 +714,6 @@ public class Tela extends JFrame {
 	}
 
 	public void testarInicio() {
-//		this.adicionarJogador("Jose", "Brasileiro", "100.200.300.400", "vivo");
-//		this.mostrarSituacaoJogador(1, "morto");
 //		this.adicionarMensagem("oi");
 //		this.adicionarMensagem("tudo bem?");
 	}
@@ -817,7 +818,6 @@ public class Tela extends JFrame {
 		this.cbCivilizacoes.setEnabled(false);
 		this.rbCriarJogo.setEnabled(false);
 		this.pnServidor.setEnabled(false);
-		this.btnCriarJogo.setEnabled(false);
 		this.btnDestruirJogo.setEnabled(false);
 		this.btnIniciarJogo.setEnabled(false);
 		this.btnEncerrarJogo.setEnabled(false);
@@ -945,12 +945,18 @@ public class Tela extends JFrame {
 			mostrarMensagemErro("Erro", "Informe um nome para o jogador");
 			return;
 		}
-
-		Jogador jogadorHost = new Jogador(nome, civilizacao, "localhost", "aguardando jogadores...", this.vila);
-		this.clienteTCP.criarServidor("localhost", jogadorHost);
-		this.situacaoInicio = SituacaoInicio.CRIAR_CRIADO;
-		this.habilitarInicio();
-
+		try {
+			String ip = InetAddress.getLocalHost().getHostAddress();
+			System.out.println("Ip do host: " + ip);
+			Jogador jogadorHost = new Jogador(nome, civilizacao, ip, "aguardando jogadores...", this.vila);
+			Boolean sucesso = this.clienteTCP.criarServidor(ip, jogadorHost);
+			if (sucesso) {
+				this.situacaoInicio = SituacaoInicio.CRIAR_CRIADO;
+				this.habilitarInicio();
+			}
+		} catch (IOException e) {
+			this.mostrarMensagemErro("Erro", "Não foi possível obter o ip local");
+		}
 	}
 
 	private void comandoDestruirJogo() {
@@ -990,17 +996,19 @@ public class Tela extends JFrame {
 		}
 		retorno = true; // retorno da conexão
 		if (retorno) {
-
-			Jogador novoJogador = new Jogador(nome, civilizacao, "localhost", "aguardando jogadores...", this.vila);
-			this.clienteTCP.conectar(ipServidor, novoJogador);
-			this.situacaoInicio = SituacaoInicio.CONECTADO;
-			this.habilitarInicio();
-			this.tpJogo.setSelectedIndex(0); //Comeca na tela dos jogadores
-
+			Jogador novoJogador = new Jogador(nome, civilizacao, ipServidor, "aguardando jogadores...", this.vila);
+			Boolean sucesso = this.clienteTCP.conectar(ipServidor, novoJogador);
+			if (sucesso) {
+				this.situacaoInicio = SituacaoInicio.CONECTADO;
+				this.habilitarInicio();
+				this.tpJogo.setSelectedIndex(0); // Comeca na tela dos jogadores
+			}
 		}
 	}
 
 	private void comandoDesconectar() {
+		this.clienteTCP.desconectar();
+		this.clienteTCP = new ClienteTCP(this);
 		this.limparJogadores();
 		this.limparMensagens();
 		this.situacaoInicio = SituacaoInicio.INICIAL_CONECTAR;
@@ -1008,7 +1016,7 @@ public class Tela extends JFrame {
 	}
 
 	private void comandoEnviarMensagem(String mensagem) {
-		this.adicionarMensagem(mensagem);
+		this.clienteTCP.enviarMensagem(mensagem);
 		this.tfMensagem.setText("");
 	}
 

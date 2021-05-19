@@ -15,7 +15,7 @@ public class ServidorTCP extends Thread {
 	private List<Jogador> jogadores;
 
 	private ServidorTCP(Socket conexao, List<ObjectOutputStream> saidas, List<Jogador> jogadores) {
-		System.out.println("Cliente conectado: " + conexao.getInetAddress().getHostAddress() + ":" + conexao.getPort());
+		System.out.println("Cliente conectado: " + conexao.getInetAddress() + ":" + conexao.getPort());
 		this.conexao = conexao;
 		this.saidas = saidas;
 		this.jogadores = jogadores;
@@ -52,6 +52,7 @@ public class ServidorTCP extends Thread {
 						synchronized (this.jogadores) {
 							this.jogadores.add(host);
 						}
+						System.out.println("QTD JOGADORES: " + jogadores.size());
 						synchronized (this.saidas) {
 							this.saidas.add(saida);
 						}
@@ -63,9 +64,11 @@ public class ServidorTCP extends Thread {
 						synchronized (this.jogadores) {
 							this.jogadores.add(conectado);
 						}
+						System.out.println("QTD JOGADORES: " + jogadores.size());
 						saida.writeObject(this.jogadores);
 						System.out.println("Retornou lista com " + this.jogadores.size() + " jogadores");
 						for (ObjectOutputStream jogador : saidas) {
+							jogador.writeObject("Atualizar lista");
 							jogador.writeObject(conectado);
 							jogador.writeObject(jogadores.size());
 						}
@@ -73,22 +76,66 @@ public class ServidorTCP extends Thread {
 							this.saidas.add(saida);
 						}
 						break;
-
+					case "Mensagem":
+						String novaMensagem = (String) entrada.readObject();
+						for (ObjectOutputStream jogador : saidas) {
+							jogador.writeObject("Adicionar mensagem");
+							jogador.writeObject(novaMensagem);
+						}
+						break;
 					}
 				}
 			} catch (SocketException e) {
 			} // Fechado no cliente sem desconectar
+
+			Jogador jogadorDesconectado = (Jogador) entrada.readObject();
+			System.out.println("QTD JOGADORES ANTES DE REMOVER: " + jogadores.size());
+			synchronized (this.jogadores) {
+				System.out.println("remove jogador do array");
+				this.jogadores.remove(jogadorDesconectado);
+			}
+			System.out.println("QTD JOGADORES DEPOIS DE REMOVER: " + jogadores.size());
+
+			System.out.println("manda \"Atualizar lista\"");
+			saida.writeObject("Atualizar lista");
+			System.out.println("manda jogador null");
+			saida.writeObject(null);
+			System.out.println("manda true para fechar");
+			saida.writeObject(true);
+
+			System.out.println("QTD SAIDAS ANTES DE REMOVER: " + saidas.size());
 			synchronized (this.saidas) {
+				System.out.println("remove saida do array");
 				this.saidas.remove(saida);
 			}
+			System.out.println("QTD SAIDAS DEPOIS DE REMOVER: " + saidas.size());
+
+			int i = 1;
+
+			for (ObjectOutputStream jogador : saidas) {
+				System.out.println("Cliente " + i);
+				System.out.println("Servidor manda \"Atualizar lista\"");
+				jogador.writeObject("Atualizar lista");
+				System.out.println("Manda jogador = null");
+				jogador.writeObject(null);
+				System.out.println("Manda False para o fechar");
+				jogador.writeObject(false);
+				System.out.println("Manda lista com " + this.jogadores.size() + " jogadores: ");
+				for (Jogador jogador2 : jogadores) {
+					System.out.println(jogador2.getNome());
+				}
+				jogador.writeObject(this.jogadores);
+				i++;
+			}
+
 			saida.close();
 			entrada.close();
-			System.out.println("Cliente desconectado: " + conexao.getInetAddress().getHostAddress());
 			this.conexao.close();
+			System.out.println("Cliente desconectado: " + conexao.getInetAddress().getHostAddress());
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Comunicação com o cliente falhou...");
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			System.out.println("Conversão deu erro...");
 		}
 	}
 }
