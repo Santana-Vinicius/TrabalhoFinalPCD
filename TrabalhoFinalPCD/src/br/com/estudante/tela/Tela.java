@@ -146,17 +146,17 @@ public class Tela extends JFrame {
 		DefaultTableCellRenderer dtcrAldeaoAcao = new DefaultTableCellRenderer() {
 			public void setValue(Object valor) {
 				String v = valor.toString();
-				if (v.equals("parado"))
+				if (v.equals("Parado"))
 					setBackground(Color.YELLOW);
-				else if (v.equals("orando"))
+				else if (v.equals("Orando"))
 					setBackground(new Color(135, 206, 235));
-				else if (v.equals("sacrificado"))
+				else if (v.equals("Sacrificado"))
 					setBackground(Color.RED);
-				else if (v.contains("cultivando"))
+				else if (v.contains("Cultivando"))
 					setBackground(Color.GREEN);
-				else if (v.contains("minerando"))
+				else if (v.contains("Minerando"))
 					setBackground(Color.ORANGE);
-				else if (v.contains("construindo"))
+				else if (v.contains("Construindo"))
 					setBackground(Color.LIGHT_GRAY);
 				else
 					setBackground(Color.BLACK);
@@ -740,6 +740,10 @@ public class Tela extends JFrame {
 	public void limparJogadores() {
 		this.tmJogadores.setRowCount(0);
 	}
+	
+	public void limparFazendas() {
+		this.tmFazendas.setRowCount(0);
+	}
 
 	public void adicionarMensagem(String mensagem) {
 		this.taMensagens.insert(mensagem + "\n", 0);
@@ -749,7 +753,7 @@ public class Tela extends JFrame {
 		this.taMensagens.setText("");
 	}
 
-	private void habilitarInicio() {
+	public void habilitarInicio() {
 		this.desabilitarInicio();
 		switch (this.situacaoInicio) {
 		case INICIAL_CRIAR:
@@ -776,6 +780,7 @@ public class Tela extends JFrame {
 			this.lblIPServidor.setEnabled(true);
 			this.tfIpServidor.setEnabled(true);
 			this.btnConectar.setEnabled(true);
+			this.btnCriarJogo.setEnabled(false);
 			break;
 		case CRIAR_CRIADO:
 			this.pnServidor.setEnabled(true);
@@ -807,7 +812,7 @@ public class Tela extends JFrame {
 			this.lblMensagem.setEnabled(true);
 			this.tfMensagem.setEnabled(true);
 			this.btnEnviar.setEnabled(true);
-			this.tpJogo.setEnabledAt(1, true);
+			this.tpJogo.setEnabledAt(1, false);
 		}
 	}
 
@@ -960,27 +965,21 @@ public class Tela extends JFrame {
 	}
 
 	private void comandoDestruirJogo() {
-		this.limparJogadores();
-		this.limparMensagens();
-		this.situacaoInicio = SituacaoInicio.INICIAL_CRIAR;
+		this.clienteTCP.desconectar();
 		this.habilitarInicio();
 	}
 
 	private void comandoIniciarJogo() {
 		boolean retorno = true; // retorno da iniciação do jogo
 		if (retorno) {
+			this.clienteTCP.iniciarJogo();
 			this.situacaoInicio = SituacaoInicio.CRIAR_INICIADO;
 			this.habilitarInicio();
-			this.tpJogo.setSelectedIndex(1);
-			this.limparInimigos();
-			this.adicionarInimigo("Inimigo-Persa");
 		}
 	}
 
 	private void comandoEncerrarJogo() {
-		this.limparJogadores();
-		this.limparMensagens();
-		this.situacaoInicio = SituacaoInicio.INICIAL_CRIAR;
+		this.clienteTCP.desconectar();
 		this.habilitarInicio();
 	}
 
@@ -1001,18 +1000,17 @@ public class Tela extends JFrame {
 			if (sucesso) {
 				this.situacaoInicio = SituacaoInicio.CONECTADO;
 				this.habilitarInicio();
-				this.tpJogo.setSelectedIndex(0); // Comeca na tela dos jogadores
 			}
 		}
 	}
 
 	private void comandoDesconectar() {
 		this.clienteTCP.desconectar();
-		this.clienteTCP = new ClienteTCP(this);
 		this.limparJogadores();
 		this.limparMensagens();
 		this.situacaoInicio = SituacaoInicio.INICIAL_CONECTAR;
 		this.habilitarInicio();
+		this.clienteTCP = new ClienteTCP(this);
 	}
 
 	private void comandoEnviarMensagem(String mensagem) {
@@ -1243,15 +1241,29 @@ public class Tela extends JFrame {
 	}
 
 	public void comandoTemploLancar(String strPraga, String strInimigo) {
-		System.out.println("comandoTemploLancar(" + strPraga + "," + strInimigo + ");");
+		boolean sucesso = false;
+		switch (strPraga) {
+		case "Nuvem de gafanhotos":
+			if (this.vila.getPrefeitura().getOferendasFe() >= 500) {
+				this.vila.getPrefeitura().addOferendasFe(-500);
+				sucesso = true;
+			}
+			break;
+
+		}
+		if (sucesso)
+			this.clienteTCP.lancarPraga(strPraga, strInimigo);
 	}
 
 	public SituacaoInicio getSituacaoInicio() {
 		return situacaoInicio;
 	}
 
-	public void setSituacaoInicio(SituacaoInicio situacaoInicio) {
-		this.situacaoInicio = situacaoInicio;
+	public void setSituacaoInicio(SituacaoInicio situacao) {
+		this.situacaoInicio = situacao;
 	}
 
+	public JTabbedPane getTpJogo() {
+		return this.tpJogo;
+	}
 }

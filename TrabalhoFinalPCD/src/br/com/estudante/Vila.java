@@ -16,8 +16,6 @@ public class Vila {
 	private boolean protecaoPedras;
 
 	private Socket socket;
-	
-
 
 	private Templo templo;
 	private ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
@@ -115,6 +113,14 @@ public class Vila {
 		tela.adicionarFazenda(novo.getNome(), "");
 	}
 
+	public void removeFazenda(int index) {
+		this.fazendas.remove(index);
+	}
+
+	public ArrayList<Fazenda> getFazendas() {
+		return this.fazendas;
+	}
+
 	public Templo getTemplo() {
 		return templo;
 	}
@@ -150,8 +156,7 @@ public class Vila {
 	public int getQtdMinasOuro() {
 		return this.minasOuro.size();
 	}
-	
-	
+
 	public Socket getSocket() {
 		return socket;
 	}
@@ -197,4 +202,5 @@ public class Vila {
 			minaOuro.setCapacidade(10);
 		}
 	}
+
 }

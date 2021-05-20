@@ -68,9 +68,9 @@ public class ServidorTCP extends Thread {
 						saida.writeObject(this.jogadores);
 						System.out.println("Retornou lista com " + this.jogadores.size() + " jogadores");
 						for (ObjectOutputStream jogador : saidas) {
-							jogador.writeObject("Atualizar lista");
+							jogador.writeObject("Adicionar jogador");
 							jogador.writeObject(conectado);
-							jogador.writeObject(jogadores.size());
+							jogador.writeObject(this.jogadores.size());
 						}
 						synchronized (this.saidas) {
 							this.saidas.add(saida);
@@ -83,49 +83,79 @@ public class ServidorTCP extends Thread {
 							jogador.writeObject(novaMensagem);
 						}
 						break;
+
+					case "Iniciar jogo":
+						for (ObjectOutputStream jogador : this.saidas) {
+							jogador.writeObject("Iniciar jogo");
+						}
+						break;
+
+					case "Praga":
+						String nomeAlvo = (String) entrada.readObject();
+						String praga = (String) entrada.readObject();
+						String nomeAtacante = (String) entrada.readObject();
+						int i = -1;
+						for (Jogador jogador : jogadores) {
+							i++;
+							if (jogador.getNome().equals(nomeAlvo))
+								break;
+						}
+						ObjectOutputStream saidaAlvo = this.saidas.get(i);
+						saidaAlvo.writeObject("Recebendo praga");
+						saidaAlvo.writeObject(nomeAtacante);
+						saidaAlvo.writeObject(praga);
+						String retorno = (String) entrada.readObject();
+						i = -1;
+						for (Jogador jogador : jogadores) {
+							i++;
+							if (jogador.getNome().equals(nomeAtacante))
+								break;
+						}
+						ObjectOutputStream saidaAtacante = this.saidas.get(i);
+						saidaAtacante.writeObject(retorno);
 					}
 				}
 			} catch (SocketException e) {
 			} // Fechado no cliente sem desconectar
-
 			Jogador jogadorDesconectado = (Jogador) entrada.readObject();
-			System.out.println("QTD JOGADORES ANTES DE REMOVER: " + jogadores.size());
-			synchronized (this.jogadores) {
-				System.out.println("remove jogador do array");
-				this.jogadores.remove(jogadorDesconectado);
-			}
-			System.out.println("QTD JOGADORES DEPOIS DE REMOVER: " + jogadores.size());
 
-			System.out.println("manda \"Atualizar lista\"");
-			saida.writeObject("Atualizar lista");
-			System.out.println("manda jogador null");
-			saida.writeObject(null);
-			System.out.println("manda true para fechar");
-			saida.writeObject(true);
-
-			System.out.println("QTD SAIDAS ANTES DE REMOVER: " + saidas.size());
-			synchronized (this.saidas) {
-				System.out.println("remove saida do array");
-				this.saidas.remove(saida);
-			}
-			System.out.println("QTD SAIDAS DEPOIS DE REMOVER: " + saidas.size());
-
-			int i = 1;
-
-			for (ObjectOutputStream jogador : saidas) {
-				System.out.println("Cliente " + i);
-				System.out.println("Servidor manda \"Atualizar lista\"");
-				jogador.writeObject("Atualizar lista");
-				System.out.println("Manda jogador = null");
-				jogador.writeObject(null);
-				System.out.println("Manda False para o fechar");
-				jogador.writeObject(false);
-				System.out.println("Manda lista com " + this.jogadores.size() + " jogadores: ");
-				for (Jogador jogador2 : jogadores) {
-					System.out.println(jogador2.getNome());
+			if ((this.jogadores.get(0)).equals(jogadorDesconectado)) {
+				for (int i = 1; i < this.saidas.size(); i++) {
+					saidas.get(i).writeObject("Fechar");
+					saidas.get(i).close();
 				}
-				jogador.writeObject(this.jogadores);
-				i++;
+				saida.writeObject("Fechar");
+			} else {
+
+				saida.writeObject("Fechar");
+
+				System.out.println("QTD JOGADORES ANTES DE REMOVER: " + jogadores.size());
+				synchronized (this.jogadores) {
+					System.out.println("remove jogador do array");
+					this.jogadores.remove(jogadorDesconectado);
+				}
+				System.out.println("QTD JOGADORES DEPOIS DE REMOVER: " + jogadores.size());
+				System.out.println("===============================");
+				System.out.println("QTD SAIDAS ANTES DE REMOVER: " + saidas.size());
+				synchronized (this.saidas) {
+					System.out.println("remove saida do array");
+					this.saidas.remove(saida);
+				}
+
+				int i = 1;
+				for (ObjectOutputStream jogador : this.saidas) {
+					System.out.println("Cliente " + i);
+					System.out.println("Servidor manda \"Remover jogador\"");
+					jogador.writeObject("Remover jogador");
+					for (Jogador jogador2 : this.jogadores) {
+						System.out.println(jogador2.getNome());
+					}
+					System.out.println("Manda jogador desconectado");
+					jogador.writeObject(jogadorDesconectado);
+					i++;
+				}
+				System.out.println("QTD SAIDAS DEPOIS DE REMOVER: " + saidas.size());
+				System.out.println("===============================");
 			}
 
 			saida.close();

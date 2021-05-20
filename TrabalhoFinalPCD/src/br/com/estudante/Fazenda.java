@@ -87,6 +87,10 @@ public class Fazenda {
 		return this.fazendeiros.size();
 	}
 
+	public ArrayList<Aldeao> getFazendeiros() {
+		return this.fazendeiros;
+	}
+
 	/*
 	 * Funcoes da Fazenda
 	 */

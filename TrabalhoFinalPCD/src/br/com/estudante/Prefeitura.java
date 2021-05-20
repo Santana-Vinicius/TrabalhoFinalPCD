@@ -17,7 +17,7 @@ public class Prefeitura extends Thread {
 	public Prefeitura(Tela tela) {
 		this.unidadesComida = Integer.valueOf(199950);
 		this.unidadesOuro = Integer.valueOf(19900);
-		this.oferendasFe = Integer.valueOf(0);
+		this.oferendasFe = Integer.valueOf(20000);
 		this.tela = tela;
 		this.tela.mostrarComida(this.unidadesComida);
 		this.tela.mostrarOuro(this.unidadesOuro);
