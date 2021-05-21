@@ -38,7 +38,6 @@ public class ServidorTCP extends Thread {
 	}
 
 	public void run() {
-
 		try {
 			ObjectInputStream entrada = new ObjectInputStream(this.conexao.getInputStream());
 			ObjectOutputStream saida = new ObjectOutputStream(this.conexao.getOutputStream());

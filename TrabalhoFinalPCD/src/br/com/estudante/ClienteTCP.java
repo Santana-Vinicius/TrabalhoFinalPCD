@@ -289,11 +289,11 @@ public class ClienteTCP extends Thread {
 							Maravilha maravilha = this.cliente.getVila().getMaravilha();
 							if (maravilha != null) {
 								int qtdTijolos = maravilha.getQtdTijolos();
-								System.out.println("Saporra tem " + qtdTijolos + " tijolos.");
+								System.out.println("Maravilha tem " + qtdTijolos + " tijolos.");
 								if (qtdTijolos > 1) {
 									qtdTijolos /= 2;
 									maravilha.setQtdTijolos(-qtdTijolos);
-									System.out.println("Saporra agora tem " + maravilha.getQtdTijolos() + " tijolos.");
+									System.out.println("Maravilha agora tem " + maravilha.getQtdTijolos() + " tijolos.");
 								}
 							}
 							this.cliente.mostrarMensagemErro("Tentativa de Ataque", jogadorAtacante
