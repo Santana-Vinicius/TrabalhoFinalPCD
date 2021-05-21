@@ -97,6 +97,10 @@ public class Templo extends Thread {
 		}
 	}
 
+	public ArrayList<Aldeao> getReligiosos() {
+		return this.religiosos;
+	}
+
 	public synchronized void removeReligioso(Aldeao aldeao) {
 		this.religiosos.remove(aldeao);
 		this.setNomeAldeoes();

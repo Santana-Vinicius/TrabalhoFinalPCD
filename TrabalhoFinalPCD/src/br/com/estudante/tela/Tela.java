@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.NumberFormat;
 import java.util.List;
 
@@ -112,22 +113,9 @@ public class Tela extends JFrame {
 	public Tela() {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Tela.class.getResource("/tela/img/icone.png")));
 		initialize();
-		this.vila = new Vila(this);
-		this.clienteTCP = new ClienteTCP(this);
-		this.vila.getPrefeitura().start();
-		this.iniciar();
-		this.testarInicio();
 	}
 
 	// Getters and Setters
-
-	public Vila getVila() {
-		return vila;
-	}
-
-	public String getCivilizacao() {
-		return this.civilizacao;
-	}
 
 	@SuppressWarnings("serial")
 	private void initialize() {
@@ -151,6 +139,8 @@ public class Tela extends JFrame {
 				else if (v.equals("Orando"))
 					setBackground(new Color(135, 206, 235));
 				else if (v.equals("Sacrificado"))
+					setBackground(Color.RED);
+				else if (v.equals("Morto"))
 					setBackground(Color.RED);
 				else if (v.contains("Cultivando"))
 					setBackground(Color.GREEN);
@@ -706,21 +696,6 @@ public class Tela extends JFrame {
 
 	}
 
-	// ************************************************************************
-	// *** Testar - Depois pode apagar ****************************************
-	// ************************************************************************
-	public void iniciar() {
-		this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
-	}
-
-	public void testarInicio() {
-//		this.adicionarMensagem("oi");
-//		this.adicionarMensagem("tudo bem?");
-	}
-	// ************************************************************************
-	// ************************************************************************
-	// ************************************************************************
-
 	// *** Entrada=Apresentação - altera valores dos componentes **************
 	// *** Inicio ************************************************************
 
@@ -740,9 +715,17 @@ public class Tela extends JFrame {
 	public void limparJogadores() {
 		this.tmJogadores.setRowCount(0);
 	}
-	
+
 	public void limparFazendas() {
 		this.tmFazendas.setRowCount(0);
+	}
+
+	public void limparAldeoes() {
+		this.tmAldeoes.setRowCount(0);
+	}
+
+	public void limparMinas() {
+		this.tmMinasOuro.setRowCount(0);
 	}
 
 	public void adicionarMensagem(String mensagem) {
@@ -951,13 +934,29 @@ public class Tela extends JFrame {
 			return;
 		}
 		try {
+			if (this.vila != null) {
+				for (Aldeao aldeao : this.vila.getAldeoes()) {
+					aldeao.setStatus(Status.MORTO);
+				}
+				this.limparAldeoes();
+				this.limparFazendas();
+				this.limparMinas();
+
+			}
+			this.vila = new Vila(this);
+			this.clienteTCP = new ClienteTCP(this);
+			this.nomeJogador = nome;
+			this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
 			String ip = InetAddress.getLocalHost().getHostAddress();
 			System.out.println("Ip do host: " + ip);
-			Jogador jogadorHost = new Jogador(nome, civilizacao, ip, "aguardando jogadores...", this.vila);
+			this.civilizacao = civilizacao;
+			Jogador jogadorHost = new Jogador(nome, civilizacao, ip, ip, "aguardando jogadores...", this.vila);
 			Boolean sucesso = this.clienteTCP.criarServidor(ip, jogadorHost);
 			if (sucesso) {
 				this.situacaoInicio = SituacaoInicio.CRIAR_CRIADO;
 				this.habilitarInicio();
+			} else {
+				mostrarMensagemErro("Falha ao criar jogo", "Já existe um jogo criado nesse ip!");
 			}
 		} catch (IOException e) {
 			this.mostrarMensagemErro("Erro", "Não foi possível obter o ip local");
@@ -995,22 +994,40 @@ public class Tela extends JFrame {
 		}
 		retorno = true; // retorno da conexão
 		if (retorno) {
-			Jogador novoJogador = new Jogador(nome, civilizacao, ipServidor, "aguardando jogadores...", this.vila);
-			Boolean sucesso = this.clienteTCP.conectar(ipServidor, novoJogador);
-			if (sucesso) {
-				this.situacaoInicio = SituacaoInicio.CONECTADO;
-				this.habilitarInicio();
+			String ip;
+			try {
+				if (this.vila != null) {
+					for (Aldeao aldeao : this.vila.getAldeoes()) {
+						aldeao.setStatus(Status.MORTO);
+					}
+					this.limparAldeoes();
+					this.limparFazendas();
+					this.limparMinas();
+
+				}
+				this.vila = new Vila(this);
+				this.clienteTCP = new ClienteTCP(this);
+				this.nomeJogador = nome;
+				this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
+				ip = InetAddress.getLocalHost().getHostAddress();
+				Jogador novoJogador = new Jogador(nome, civilizacao, ipServidor, ip, "aguardando host iniciar...",
+						this.vila);
+				this.civilizacao = civilizacao;
+				Boolean sucesso = this.clienteTCP.conectar(ipServidor, novoJogador);
+				if (sucesso) {
+					this.situacaoInicio = SituacaoInicio.CONECTADO;
+					this.habilitarInicio();
+				} else {
+					mostrarMensagemErro("Falha ao se conectar", "Partida já em andamento!");
+				}
+			} catch (UnknownHostException e) {
+				System.out.println("Não foi possível pegar o ip local");
 			}
 		}
 	}
 
 	private void comandoDesconectar() {
 		this.clienteTCP.desconectar();
-		this.limparJogadores();
-		this.limparMensagens();
-		this.situacaoInicio = SituacaoInicio.INICIAL_CONECTAR;
-		this.habilitarInicio();
-		this.clienteTCP = new ClienteTCP(this);
 	}
 
 	private void comandoEnviarMensagem(String mensagem) {
@@ -1025,8 +1042,9 @@ public class Tela extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao aldeaoSelecionado = this.vila.getAldeao(aldeao);
-			if (aldeaoSelecionado.getStatus().equals(Status.SACRIFICADO.getDescription())) {
-				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			if (aldeaoSelecionado.getStatus().equals(Status.SACRIFICADO.getDescription())
+					|| aldeaoSelecionado.getStatus().equals(Status.MORTO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão está morto");
 			} else {
 				if (aldeaoSelecionado.getFazenda() != null) {
 					Fazenda fazenda = aldeaoSelecionado.getFazenda();
@@ -1052,8 +1070,9 @@ public class Tela extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao aldeaoSelecionado = this.vila.getAldeao(aldeao);
-			if (aldeaoSelecionado.getStatus().equals(Status.SACRIFICADO.getDescription())) {
-				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			if (aldeaoSelecionado.getStatus().equals(Status.SACRIFICADO.getDescription())
+					|| aldeaoSelecionado.getStatus().equals(Status.MORTO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão está morto");
 			} else {
 				if (qual.equals("Templo") && this.getVila().getTemplo() != null) {
 
@@ -1097,34 +1116,44 @@ public class Tela extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao novoFazendeiro = this.vila.getAldeao(aldeao);
-			if (novoFazendeiro.getStatus().equals(Status.SACRIFICADO.getDescription())) {
-				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			if (novoFazendeiro.getStatus().equals(Status.SACRIFICADO.getDescription())
+					|| novoFazendeiro.getStatus().equals(Status.MORTO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão está morto");
 			} else {
 				Fazenda fazenda = this.vila.getFazenda(numeroFazenda);
 				synchronized (fazenda) {
-					if (fazenda.getQtdFazendeiros() < fazenda.getCapacidade()) {
-						if (!novoFazendeiro.getStatus().equals(Status.PARADO.getDescription())
-								&& !novoFazendeiro.getStatus().equals(Status.CULTIVANDO.getDescription())) {
-							novoFazendeiro.interrupt();
-							switch (novoFazendeiro.getStatus()) {
-							case "Minerando":
-								novoFazendeiro.getMinaOuro().removeMinerador(novoFazendeiro);
-								break;
+					if (!fazenda.procuraAldeao(novoFazendeiro.getNome())) {
+						if (fazenda.getQtdFazendeiros() < fazenda.getCapacidade()) {
+							if (!novoFazendeiro.getStatus().equals(Status.PARADO.getDescription())) {
+								if (!novoFazendeiro.getStatus().equals(Status.CULTIVANDO.getDescription()))
+									novoFazendeiro.interrupt();
+								switch (novoFazendeiro.getStatus()) {
+								case "Cultivando":
+									novoFazendeiro.getFazenda().removeFazendeiro(novoFazendeiro);
+									break;
 
-							case "Orando":
-								this.getVila().getTemplo().removeReligioso(novoFazendeiro);
-								break;
+								case "Minerando":
+									novoFazendeiro.getMinaOuro().removeMinerador(novoFazendeiro);
+									break;
+
+								case "Orando":
+									this.getVila().getTemplo().removeReligioso(novoFazendeiro);
+									break;
+								}
 							}
-						}
-						novoFazendeiro.setStatus(Status.CULTIVANDO);
-						synchronized (novoFazendeiro) {
-							novoFazendeiro.notify();
-						}
-						novoFazendeiro.setFazenda(fazenda);
-						fazenda.addFazendeiro(novoFazendeiro);
-						this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
-					} else
-						mostrarMensagemErro("Erro", "Quantidade máxima de aldeões na fazenda " + (numeroFazenda + 1));
+							novoFazendeiro.setStatus(Status.CULTIVANDO);
+							synchronized (novoFazendeiro) {
+								novoFazendeiro.notify();
+							}
+							novoFazendeiro.setFazenda(fazenda);
+							fazenda.addFazendeiro(novoFazendeiro);
+							this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
+						} else
+							mostrarMensagemErro("Erro",
+									"Quantidade máxima de aldeões na fazenda " + (numeroFazenda + 1));
+
+					}
+
 				}
 			}
 		}
@@ -1135,35 +1164,42 @@ public class Tela extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao novoMinerador = this.vila.getAldeao(aldeao);
-			if (novoMinerador.getStatus().equals(Status.SACRIFICADO.getDescription())) {
-				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			if (novoMinerador.getStatus().equals(Status.SACRIFICADO.getDescription())
+					|| novoMinerador.getStatus().equals(Status.MORTO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão está morto");
 			} else {
 				MinaOuro minaOuro = this.vila.getMinaOuro(numeroMinaOuro);
 				synchronized (minaOuro) {
-					if (minaOuro.getQtdMineradores() < minaOuro.getCapacidade()) {
-						if (!novoMinerador.getStatus().equals(Status.PARADO.getDescription())
-								&& !novoMinerador.getStatus().equals(Status.MINERANDO.getDescription())) {
-							novoMinerador.interrupt();
-							switch (novoMinerador.getStatus()) {
-							case "Cultivando":
-								novoMinerador.getFazenda().removeFazendeiro(novoMinerador);
-								break;
+					if (!minaOuro.procuraAldeao(novoMinerador.getNome())) {
+						if (minaOuro.getQtdMineradores() < minaOuro.getCapacidade()) {
+							if (!novoMinerador.getStatus().equals(Status.PARADO.getDescription())) {
+								if (!novoMinerador.getStatus().equals(Status.MINERANDO.getDescription()))
+									novoMinerador.interrupt();
+								switch (novoMinerador.getStatus()) {
+								case "Cultivando":
+									novoMinerador.getFazenda().removeFazendeiro(novoMinerador);
+									break;
 
-							case "Orando":
-								this.getVila().getTemplo().removeReligioso(novoMinerador);
-								break;
+								case "Minerando":
+									novoMinerador.getMinaOuro().removeMinerador(novoMinerador);
+									break;
+
+								case "Orando":
+									this.getVila().getTemplo().removeReligioso(novoMinerador);
+									break;
+								}
 							}
-						}
-						novoMinerador.setStatus(Status.MINERANDO);
-						synchronized (novoMinerador) {
-							novoMinerador.notify();
-						}
-						novoMinerador.setMinaOuro(minaOuro);
-						minaOuro.addMinerador(novoMinerador);
-						this.mostrarAldeao(aldeao, novoMinerador.getStatus());
-					} else
-						mostrarMensagemErro("Erro",
-								"Quantidade máxima de aldeões na mina de ouro " + (numeroMinaOuro + 1));
+							novoMinerador.setStatus(Status.MINERANDO);
+							synchronized (novoMinerador) {
+								novoMinerador.notify();
+							}
+							novoMinerador.setMinaOuro(minaOuro);
+							minaOuro.addMinerador(novoMinerador);
+							this.mostrarAldeao(aldeao, novoMinerador.getStatus());
+						} else
+							mostrarMensagemErro("Erro",
+									"Quantidade máxima de aldeões na mina de ouro " + (numeroMinaOuro + 1));
+					}
 				}
 			}
 		}
@@ -1174,8 +1210,9 @@ public class Tela extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao novoReligioso = this.vila.getAldeao(aldeao);
-			if (novoReligioso.getStatus().equals(Status.SACRIFICADO.getDescription())) {
-				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
+			if (novoReligioso.getStatus().equals(Status.SACRIFICADO.getDescription())
+					|| novoReligioso.getStatus().equals(Status.MORTO.getDescription())) {
+				this.mostrarMensagemErro("Erro", "Aldeão está morto");
 			} else {
 				if (this.getVila().getTemplo() != null) {
 					if (!novoReligioso.getStatus().equals(Status.PARADO.getDescription())
@@ -1208,7 +1245,8 @@ public class Tela extends JFrame {
 			mostrarMensagemErro("Erro", "Escolha um aldeão");
 		else {
 			Aldeao novoSacrificado = this.vila.getAldeao(aldeao);
-			if (novoSacrificado.getStatus().equals(Status.SACRIFICADO.getDescription())) {
+			if (novoSacrificado.getStatus().equals(Status.SACRIFICADO.getDescription())
+					|| novoSacrificado.getStatus().equals(Status.MORTO.getDescription())) {
 				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
 			} else {
 				if (novoSacrificado.getStatus().equals(Status.ORANDO.getDescription())) {
@@ -1229,7 +1267,6 @@ public class Tela extends JFrame {
 		Aldeao novo = this.vila.getPrefeitura().criarAldeao();
 		if (novo != null)
 			this.vila.addAldeao(novo);
-
 	}
 
 	public void comandoPrefeituraEvoluir(String strEvolucao) {
@@ -1242,17 +1279,36 @@ public class Tela extends JFrame {
 
 	public void comandoTemploLancar(String strPraga, String strInimigo) {
 		boolean sucesso = false;
+		int valor = 99999;
 		switch (strPraga) {
 		case "Nuvem de gafanhotos":
 			if (this.vila.getPrefeitura().getOferendasFe() >= 500) {
 				this.vila.getPrefeitura().addOferendasFe(-500);
 				sucesso = true;
 			}
+			valor = 500;
+			break;
+		case "Morte dos primogênitos":
+			if (this.vila.getPrefeitura().getOferendasFe() >= 750) {
+				this.vila.getPrefeitura().addOferendasFe(-750);
+				sucesso = true;
+			}
+			valor = 750;
+			break;
+		case "Chuva de pedras":
+			if (this.vila.getPrefeitura().getOferendasFe() >= 10000) {
+				this.vila.getPrefeitura().addOferendasFe(-10000);
+				sucesso = true;
+			}
+			valor = 10000;
 			break;
 
 		}
 		if (sucesso)
 			this.clienteTCP.lancarPraga(strPraga, strInimigo);
+		else
+			this.mostrarMensagemErro("Recursos insuficientes",
+					"Você precisa de mais" + (valor - this.getVila().getPrefeitura().getOferendasFe()));
 	}
 
 	public SituacaoInicio getSituacaoInicio() {
@@ -1265,5 +1321,13 @@ public class Tela extends JFrame {
 
 	public JTabbedPane getTpJogo() {
 		return this.tpJogo;
+	}
+
+	public Vila getVila() {
+		return vila;
+	}
+
+	public String getCivilizacao() {
+		return this.civilizacao;
 	}
 }

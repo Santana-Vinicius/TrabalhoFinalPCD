@@ -15,7 +15,7 @@ public class ServidorTCP extends Thread {
 	private List<Jogador> jogadores;
 
 	private ServidorTCP(Socket conexao, List<ObjectOutputStream> saidas, List<Jogador> jogadores) {
-		System.out.println("Cliente conectado: " + conexao.getInetAddress() + ":" + conexao.getPort());
+		System.out.println("Cliente conectado: " + conexao.getInetAddress().getHostAddress() + ":" + conexao.getPort());
 		this.conexao = conexao;
 		this.saidas = saidas;
 		this.jogadores = jogadores;
@@ -47,33 +47,54 @@ public class ServidorTCP extends Thread {
 				while (!(acao = (String) entrada.readObject()).equals("CMD|DESCONECTAR")) {
 					switch (acao) {
 					case "Criar jogo":
-						Jogador host = (Jogador) entrada.readObject();
-						System.out.println(host.getNome() + " recebido no servidor");
-						synchronized (this.jogadores) {
-							this.jogadores.add(host);
-						}
-						System.out.println("QTD JOGADORES: " + jogadores.size());
-						synchronized (this.saidas) {
-							this.saidas.add(saida);
+						if (this.jogadores.size() < 1) {
+							saida.writeObject(Boolean.FALSE);
+							Jogador host = (Jogador) entrada.readObject();
+							System.out.println(host.getNome() + " recebido no servidor");
+							synchronized (this.jogadores) {
+								this.jogadores.add(host);
+							}
+							System.out.println("QTD JOGADORES: " + jogadores.size());
+							synchronized (this.saidas) {
+								this.saidas.add(saida);
+							}
+						} else {
+							saida.writeObject(Boolean.TRUE);
+							this.saidas.remove(saida);
+							saida.close();
+							System.out.println("Fecha saída");
+							entrada.close();
+							System.out.println("Fecha entrada");
+							this.conexao.close();
 						}
 						break;
 
 					case "Conectar":
 						Jogador conectado = (Jogador) entrada.readObject();
 						System.out.println(conectado.getNome() + " recebido no servidor");
-						synchronized (this.jogadores) {
-							this.jogadores.add(conectado);
-						}
-						System.out.println("QTD JOGADORES: " + jogadores.size());
-						saida.writeObject(this.jogadores);
-						System.out.println("Retornou lista com " + this.jogadores.size() + " jogadores");
-						for (ObjectOutputStream jogador : saidas) {
-							jogador.writeObject("Adicionar jogador");
-							jogador.writeObject(conectado);
-							jogador.writeObject(this.jogadores.size());
-						}
-						synchronized (this.saidas) {
-							this.saidas.add(saida);
+						if (!this.jogadores.get(0).getSituacao().equals("Jogando")) {
+							synchronized (this.jogadores) {
+								this.jogadores.add(conectado);
+							}
+							System.out.println("QTD JOGADORES: " + jogadores.size());
+							saida.writeObject(Boolean.FALSE);
+							saida.writeObject(this.jogadores);
+							System.out.println("Retornou lista com " + this.jogadores.size() + " jogadores");
+							for (ObjectOutputStream jogador : saidas) {
+								jogador.writeObject("Adicionar jogador");
+								jogador.writeObject(conectado);
+								jogador.writeObject(this.jogadores.size());
+							}
+							synchronized (this.saidas) {
+								this.saidas.add(saida);
+							}
+						} else {
+							saida.writeObject(Boolean.TRUE);
+							saida.close();
+							System.out.println("Fecha saída");
+							entrada.close();
+							System.out.println("Fecha entrada");
+							this.conexao.close();
 						}
 						break;
 					case "Mensagem":
@@ -85,6 +106,9 @@ public class ServidorTCP extends Thread {
 						break;
 
 					case "Iniciar jogo":
+						for (Jogador jogador : jogadores) {
+							jogador.setSituacao("Jogando");
+						}
 						for (ObjectOutputStream jogador : this.saidas) {
 							jogador.writeObject("Iniciar jogo");
 						}
@@ -92,8 +116,11 @@ public class ServidorTCP extends Thread {
 
 					case "Praga":
 						String nomeAlvo = (String) entrada.readObject();
+						System.out.println("Nome do alvo: " + nomeAlvo);
 						String praga = (String) entrada.readObject();
+						System.out.println("Nome da praga: " + praga);
 						String nomeAtacante = (String) entrada.readObject();
+						System.out.println("Nome do atacante: " + nomeAtacante);
 						int i = -1;
 						for (Jogador jogador : jogadores) {
 							i++;
@@ -102,17 +129,37 @@ public class ServidorTCP extends Thread {
 						}
 						ObjectOutputStream saidaAlvo = this.saidas.get(i);
 						saidaAlvo.writeObject("Recebendo praga");
+						System.out.println("Envia Recebendo praga para o " + nomeAlvo);
 						saidaAlvo.writeObject(nomeAtacante);
+						System.out.println("Envia o " + nomeAtacante + " para o " + nomeAlvo);
 						saidaAlvo.writeObject(praga);
+						System.out.println("Envia a praga " + praga + " para o " + nomeAlvo);
+						break;
+
+					case "Resultado ataque":
 						String retorno = (String) entrada.readObject();
+						System.out.println("Recebeu o resultado " + retorno);
+						String atacante = (String) entrada.readObject();
+						System.out.println("Recebeu o jogador atacante: " + atacante);
+						String alvo = (String) entrada.readObject();
+						System.out.println("Recebeu o jogador alvo: " + alvo);
+						String nomePraga = (String) entrada.readObject();
+						System.out.println("Recebeu a praga: " + nomePraga);
 						i = -1;
 						for (Jogador jogador : jogadores) {
 							i++;
-							if (jogador.getNome().equals(nomeAtacante))
+							if (jogador.getNome().equals(atacante))
 								break;
 						}
 						ObjectOutputStream saidaAtacante = this.saidas.get(i);
+						System.out.println("Pegou a saída do jogador " + i + ": " + this.jogadores.get(i).getNome());
+						saidaAtacante.writeObject("Mostra resultado ataque");
 						saidaAtacante.writeObject(retorno);
+						System.out.println("Retornou " + retorno + " para o atacante");
+						saidaAtacante.writeObject(alvo);
+						System.out.println("Retornou " + alvo + " para o atacante");
+						saidaAtacante.writeObject(nomePraga);
+						System.out.println("Retornou " + nomePraga + " para o atacante");
 					}
 				}
 			} catch (SocketException e) {
@@ -120,13 +167,22 @@ public class ServidorTCP extends Thread {
 			Jogador jogadorDesconectado = (Jogador) entrada.readObject();
 
 			if ((this.jogadores.get(0)).equals(jogadorDesconectado)) {
-				for (int i = 1; i < this.saidas.size(); i++) {
+				for (int i = this.saidas.size() - 1; i > 0; i--) {
+					System.out.println("Manda Fechar para a saída " + i);
 					saidas.get(i).writeObject("Fechar");
 					saidas.get(i).close();
+					System.out.println("Saída " + i + " fechada");
 				}
+				System.out.println("Manda Fechar para o host ");
 				saida.writeObject("Fechar");
+				this.saidas.removeAll(saidas);
+				System.out.println("Zera a lista de saidas");
+				this.jogadores.removeAll(jogadores);
+				System.out.println("Zera a lista de jogadores");
+				this.saidas = new ArrayList<ObjectOutputStream>();
+				this.jogadores = new ArrayList<Jogador>();
 			} else {
-
+				System.out.println("Manda Fechar para o jogador " + jogadorDesconectado.getNome());
 				saida.writeObject("Fechar");
 
 				System.out.println("QTD JOGADORES ANTES DE REMOVER: " + jogadores.size());
@@ -135,31 +191,34 @@ public class ServidorTCP extends Thread {
 					this.jogadores.remove(jogadorDesconectado);
 				}
 				System.out.println("QTD JOGADORES DEPOIS DE REMOVER: " + jogadores.size());
+
 				System.out.println("===============================");
+
 				System.out.println("QTD SAIDAS ANTES DE REMOVER: " + saidas.size());
 				synchronized (this.saidas) {
 					System.out.println("remove saida do array");
 					this.saidas.remove(saida);
 				}
+				System.out.println("QTD SAIDAS DEPOIS DE REMOVER: " + saidas.size());
 
-				int i = 1;
+				System.out.println("===============================");
+
+				int i = 0;
 				for (ObjectOutputStream jogador : this.saidas) {
-					System.out.println("Cliente " + i);
+					System.out.println("Cliente " + i + ": " + jogadores.get(i).getNome());
 					System.out.println("Servidor manda \"Remover jogador\"");
 					jogador.writeObject("Remover jogador");
-					for (Jogador jogador2 : this.jogadores) {
-						System.out.println(jogador2.getNome());
-					}
 					System.out.println("Manda jogador desconectado");
 					jogador.writeObject(jogadorDesconectado);
 					i++;
 				}
-				System.out.println("QTD SAIDAS DEPOIS DE REMOVER: " + saidas.size());
-				System.out.println("===============================");
+
 			}
 
 			saida.close();
+			System.out.println("Fecha saída");
 			entrada.close();
+			System.out.println("Fecha entrada");
 			this.conexao.close();
 			System.out.println("Cliente desconectado: " + conexao.getInetAddress().getHostAddress());
 		} catch (IOException e) {

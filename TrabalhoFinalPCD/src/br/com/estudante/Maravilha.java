@@ -19,7 +19,6 @@ public class Maravilha extends Thread {
 		while (true) {
 			if (this.construtores.size() > 0) {
 				this.tela.mostrarMaravilha(this.qtdTijolos);
-				System.out.println(this.getQtdConstrutores());
 			}
 		}
 	}
@@ -39,14 +38,18 @@ public class Maravilha extends Thread {
 	public Prefeitura getPrefeitura() {
 		return prefeitura;
 	}
-	
+
 	public void procuraRemoveConstrutor(Aldeao aldeao) {
-		if (this.construtores.contains(aldeao)) 
+		if (this.construtores.contains(aldeao))
 			this.construtores.remove(aldeao);
 	}
 
 	public void setPrefeitura(Prefeitura prefeitura) {
 		this.prefeitura = prefeitura;
+	}
+
+	public ArrayList<Aldeao> getConstrutores() {
+		return this.construtores;
 	}
 
 	public Tela getPrincipal() {
@@ -63,6 +66,10 @@ public class Maravilha extends Thread {
 
 	public synchronized void setQtdTijolos() {
 		this.qtdTijolos++;
+	}
+
+	public synchronized void setQtdTijolos(int qtdTijolos) {
+		this.qtdTijolos += qtdTijolos;
 	}
 
 }

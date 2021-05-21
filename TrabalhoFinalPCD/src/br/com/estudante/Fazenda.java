@@ -78,6 +78,14 @@ public class Fazenda {
 		this.fazendeiros.remove(aldeao);
 		this.setNomeAldeoes();
 	}
+	
+	public boolean procuraAldeao (String nome) {
+		for (Aldeao aldeao : fazendeiros) {
+			if (aldeao.getNome().equals(nome))
+				return true;
+		}
+		return false;
+	}
 
 	public synchronized String getNomeAldeoes() {
 		return nomeAldeoes;

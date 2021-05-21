@@ -20,7 +20,7 @@ public class MinaOuro {
 		setNome(nome);
 		setCapacidade(5);
 	}
-	
+
 	public String getNome() {
 		return nome;
 	}
@@ -28,7 +28,7 @@ public class MinaOuro {
 	public void setNome(String name) {
 		this.nome = name;
 	}
-	
+
 	public synchronized int getCapacidade() {
 		return capacidade;
 	}
@@ -44,7 +44,7 @@ public class MinaOuro {
 	public void setPrincipal(Tela tela) {
 		this.tela = tela;
 	}
-	
+
 	public void setNomeAldeoes() {
 		this.nomeAldeoes = "";
 		SortedSet<String> nomes = new TreeSet<String>();
@@ -68,7 +68,19 @@ public class MinaOuro {
 			this.mineradores.add(aldeao);
 			this.setNomeAldeoes();
 		}
-		
+
+	}
+
+	public boolean procuraAldeao(String nome) {
+		for (Aldeao aldeao : mineradores) {
+			if (aldeao.getNome().equals(nome))
+				return true;
+		}
+		return false;
+	}
+
+	public ArrayList<Aldeao> getMineradores() {
+		return this.mineradores;
 	}
 
 	public synchronized void removeMinerador(Aldeao aldeao) {

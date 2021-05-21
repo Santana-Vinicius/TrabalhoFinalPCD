@@ -31,7 +31,7 @@ public class Aldeao extends Thread {
 	 */
 	@Override
 	public void run() {
-		while (this.status != Status.SACRIFICADO) {
+		while (this.status != Status.SACRIFICADO && this.status != Status.MORTO) {
 			this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
 			switch (this.status.toString()) {
 			case "Cultivando":
@@ -51,6 +51,7 @@ public class Aldeao extends Thread {
 				break;
 			}
 		}
+		this.prefeitura.getPrincipal().mostrarAldeao(Integer.valueOf(this.nome), this.status.toString());
 	}
 
 	/*
@@ -68,8 +69,18 @@ public class Aldeao extends Thread {
 		return status.toString();
 	}
 
-	public void setStatus(Enum<Status> status) {
-		this.status = status;
+	public Enum<Status> getStatusEnum() {
+		return status;
+	}
+
+	public synchronized void setStatus(Enum<Status> status) {
+		if (this.status == null)
+			this.status = status;
+
+		else if (!this.status.equals(Status.MORTO) && !this.status.equals(Status.SACRIFICADO))
+			this.status = status;
+		else
+			System.out.println("O aldeão " + nome + " não pode ser ressucitado");
 	}
 
 	public Fazenda getFazenda() {
@@ -134,9 +145,12 @@ public class Aldeao extends Thread {
 			Thread.sleep(Utils.calculaTempoTransporte(this.nivel, 1000));
 			prefeitura.addUnidadesComida(comidaProduzida);
 			this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
-
+			this.prefeitura.getPrincipal().mostrarFazenda(Integer.valueOf(this.fazenda.getNome()),
+					this.fazenda.getNomeAldeoes());
 		} catch (InterruptedException e) {
 			fazenda.removeFazendeiro(this);
+			this.prefeitura.getPrincipal().mostrarFazenda(Integer.valueOf(this.fazenda.getNome()),
+					this.fazenda.getNomeAldeoes());
 			this.setFazenda(null);
 			this.setStatus(Status.PARADO);
 			this.run();
@@ -156,9 +170,14 @@ public class Aldeao extends Thread {
 				prefeitura.addUnidadesOuro(ouroProduzido);
 				this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
 			}
+			this.prefeitura.getPrincipal().mostrarMinaOuro(Integer.valueOf(this.minaOuro.getNome()), this.minaOuro.getNomeAldeoes());
 
 		} catch (InterruptedException e) {
 			this.setStatus(Status.PARADO);
+			this.minaOuro.removeMinerador(this);
+			this.prefeitura.getPrincipal().mostrarMinaOuro(Integer.valueOf(this.minaOuro.getNome()),
+					this.minaOuro.getNomeAldeoes());
+			this.minaOuro = null;
 			this.run();
 		}
 
@@ -263,7 +282,9 @@ public class Aldeao extends Thread {
 				return new Fazenda(String.valueOf(tela.getVila().getQtdFazendas()), tela);
 			} catch (InterruptedException e) {
 				this.setStatus(Status.PARADO);
+				this.tipoConstrucao = "";
 				this.run();
+				return null;
 			}
 		}
 
@@ -295,7 +316,9 @@ public class Aldeao extends Thread {
 				return new MinaOuro(String.valueOf(tela.getVila().getQtdMinasOuro()), tela);
 			} catch (InterruptedException e) {
 				this.setStatus(Status.PARADO);
+				this.tipoConstrucao = "";
 				this.run();
+				return null;
 			}
 		}
 		this.prefeitura.getPrincipal().mostrarMensagemErro("Recursos insuficientes",
@@ -315,7 +338,9 @@ public class Aldeao extends Thread {
 				return new Templo(tela);
 			} catch (InterruptedException e) {
 				this.setStatus(Status.PARADO);
+				this.tipoConstrucao = "";
 				this.run();
+				return null;
 			}
 		}
 		String msg = "";
@@ -346,15 +371,17 @@ public class Aldeao extends Thread {
 			}
 		} catch (InterruptedException e) {
 			this.setStatus(Status.PARADO);
+			this.prefeitura.getPrincipal().getVila().getTemplo().removeReligioso(this);
 			this.run();
 		}
 	}
-	
-	public synchronized void parar () {
+
+	public synchronized void parar() {
 		try {
 			this.wait();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			this.setStatus(Status.PARADO);
+			this.run();
 		}
 	}
 

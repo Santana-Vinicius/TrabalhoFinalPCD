@@ -1,8 +1,4 @@
 package br.com.estudante;
-
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import br.com.estudante.tela.Tela;
@@ -14,8 +10,6 @@ public class Vila {
 	private boolean protecaoGafanhotos;
 	private boolean protecaoPrimogenitos;
 	private boolean protecaoPedras;
-
-	private Socket socket;
 
 	private Templo templo;
 	private ArrayList<Aldeao> aldeoes = new ArrayList<Aldeao>();
@@ -78,6 +72,10 @@ public class Vila {
 	 */
 	public Prefeitura getPrefeitura() {
 		return prefeitura;
+	}
+	
+	public ArrayList<Aldeao> getAldeoes () {
+		return this.aldeoes;
 	}
 
 	public void setPrefeitura(Prefeitura prefeitura) {
@@ -148,6 +146,14 @@ public class Vila {
 		this.minasOuro.add(novo);
 		tela.adicionarMinaOuro(novo.getNome(), "");
 	}
+	
+	public void removeMinaOuro(int index) {
+		this.minasOuro.remove(index);
+	}
+
+	public ArrayList<MinaOuro> getMinas() {
+		return this.minasOuro;
+	}
 
 	public int getQtdFazendas() {
 		return this.fazendas.size();
@@ -157,21 +163,18 @@ public class Vila {
 		return this.minasOuro.size();
 	}
 
-	public Socket getSocket() {
-		return socket;
+	public int getQtdAldeoes() {
+		return this.aldeoes.size();
 	}
 
-	public void setSocket(int port) {
-		try {
-			this.socket = new Socket("localhost", port);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public int getQtdAldeoesVivos() {
+		int qtd = 0;
+		for (Aldeao aldeao : aldeoes) {
+			if (!aldeao.getStatus().equals("Sacrificado") && !aldeao.getStatus().equals("Morto"))
+				qtd++;
 		}
+		return qtd;
 	}
-
 	/*
 	 * Massa de dados para teste
 	 */
