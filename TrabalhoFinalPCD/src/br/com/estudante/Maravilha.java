@@ -16,7 +16,7 @@ public class Maravilha extends Thread {
 	}
 
 	public void run() {
-		while (this.getQtdTijolos() != 50) {
+		while (this.getQtdTijolos() != 100000) {
 				try {
 					synchronized (this) {
 						this.wait();

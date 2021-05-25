@@ -51,7 +51,6 @@ public class Tela extends JFrame {
 
 	private Vila vila;
 	private String civilizacao;
-	private String nomeJogador;
 	private ClienteTCP clienteTCP;
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane tpJogo;
@@ -559,7 +558,7 @@ public class Tela extends JFrame {
 		this.pbMaravilha = new JProgressBar();
 		this.pbMaravilha.setOrientation(SwingConstants.VERTICAL);
 		this.pbMaravilha.setBounds(225, 20, 30, 170);
-		this.pbMaravilha.setMaximum(50);
+		this.pbMaravilha.setMaximum(100000);
 		this.pbMaravilha.setStringPainted(true);
 		this.pbMaravilha.setEnabled(false);
 		this.pnMaravilha.add(pbMaravilha);
@@ -955,8 +954,7 @@ public class Tela extends JFrame {
 			}
 			this.vila = new Vila(this);
 			this.clienteTCP = new ClienteTCP(this);
-			this.nomeJogador = nome;
-			this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
+			this.mostrarPrefeitura("Parada", Color.ORANGE);
 			String ip = InetAddress.getLocalHost().getHostAddress();
 			System.out.println("Ip do host: " + ip);
 			this.civilizacao = civilizacao;
@@ -1017,8 +1015,7 @@ public class Tela extends JFrame {
 				}
 				this.vila = new Vila(this);
 				this.clienteTCP = new ClienteTCP(this);
-				this.nomeJogador = nome;
-				this.mostrarPrefeitura("Vila de " + this.nomeJogador, Color.ORANGE);
+				this.mostrarPrefeitura("Parada", Color.ORANGE);
 				ip = InetAddress.getLocalHost().getHostAddress();
 				Jogador novoJogador = new Jogador(nome, civilizacao, ipServidor, ip, "aguardando host iniciar...",
 						this.vila);

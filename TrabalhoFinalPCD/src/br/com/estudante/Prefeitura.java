@@ -1,5 +1,7 @@
 package br.com.estudante;
 
+import java.awt.Color;
+
 import br.com.estudante.tela.Tela;
 
 public class Prefeitura extends Thread {
@@ -11,19 +13,25 @@ public class Prefeitura extends Thread {
 	private int nivelAldeoes;
 	private String tipoEvolucao;
 	private Boolean acabou = false;
+	private Boolean evoluiuAldeao;
+	private Boolean evoluiuFazendas;
+	private Boolean evoluiuMinas;
 
 	/*
 	 * Constructor
 	 */
 	public Prefeitura(Tela tela) {
-		this.unidadesComida = Integer.valueOf(150);
-		this.unidadesOuro = Integer.valueOf(100);
+		this.unidadesComida = Integer.valueOf(15000);
+		this.unidadesOuro = Integer.valueOf(10000);
 		this.oferendasFe = Integer.valueOf(0);
 		this.tela = tela;
 		this.tela.mostrarComida(this.unidadesComida);
 		this.tela.mostrarOuro(this.unidadesOuro);
 		this.tela.mostrarOferendaFe(this.oferendasFe);
 		this.setNivelAldeoes(1);
+		this.setEvoluiuAldeao(false);
+		this.setEvoluiuFazendas(false);
+		this.setEvoluiuMinas(false);
 		setTipoEvolucao("");
 	}
 
@@ -39,7 +47,6 @@ public class Prefeitura extends Thread {
 			this.tela.mostrarOuro(this.unidadesOuro);
 			this.tela.mostrarOferendaFe(this.oferendasFe);
 			this.evoluir();
-
 		}
 	}
 
@@ -104,16 +111,50 @@ public class Prefeitura extends Thread {
 			this.oferendasFe += oferendasFe;
 	}
 
+	public synchronized Boolean getEvoluiuAldeao() {
+		return evoluiuAldeao;
+	}
+
+	public synchronized void setEvoluiuAldeao(Boolean evoluiuAldeao) {
+		this.evoluiuAldeao = evoluiuAldeao;
+	}
+
+	public synchronized Boolean getEvoluiuFazendas() {
+		return evoluiuFazendas;
+	}
+
+	public synchronized void setEvoluiuFazendas(Boolean evoluiuFazendas) {
+		this.evoluiuFazendas = evoluiuFazendas;
+	}
+
+	public synchronized Boolean getEvoluiuMinas() {
+		return evoluiuMinas;
+	}
+
+	public synchronized void setEvoluiuMinas(Boolean evoluiuMinas) {
+		this.evoluiuMinas = evoluiuMinas;
+	}
+
 	/*
 	 * Criar aldeao
 	 */
 
 	public Aldeao criarAldeao() {
 		if (this.unidadesComida >= 100) {
-			Aldeao novo = new Aldeao(String.valueOf(numAldeosCriados), this);
-			numAldeosCriados++;
-			this.addUnidadesComida(-100);
-			return novo;
+			Boolean criado = false;
+			try {
+				this.addUnidadesComida(-100);
+				Thread.sleep(2000);
+				Aldeao novo = new Aldeao(String.valueOf(numAldeosCriados), this);
+				numAldeosCriados++;
+				criado = true;
+				return novo;
+			} catch (InterruptedException e) {
+				if (!criado) {
+					this.addUnidadesComida(100);
+				}
+				this.run();
+			}
 		}
 		this.tela.mostrarMensagemErro("Recursos insuficientes",
 				"Você precisa de mais " + (100 - this.unidadesComida) + " de comida.");
@@ -137,106 +178,152 @@ public class Prefeitura extends Thread {
 	}
 
 	public void evoluirAldeao() {
-		if (this.unidadesComida >= 5000 && this.unidadesOuro >= 5000) {
-			try {
-				Thread.sleep(5000);
-				this.setNivelAldeoes(this.getNivelAldeoes() + 1);
-				this.getPrincipal().getVila().subirNivelAldeoes(this.nivelAldeoes);
-				this.addUnidadesComida(-5000);
-				this.addUnidadesOuro(-5000);
-			} catch (InterruptedException e) {
-				this.setTipoEvolucao("");
-				this.run();
-				System.out.println("Erro evolução Aldeão");
+		if (!this.getEvoluiuAldeao()) {
+			if (this.unidadesComida >= 5000 && this.unidadesOuro >= 5000) {
+				Boolean evoluiu = false;
+				try {
+					this.tela.mostrarPrefeitura("Evoluindo aldeões...", Color.GREEN);
+					this.addUnidadesComida(-5000);
+					this.addUnidadesOuro(-5000);
+					this.tela.mostrarComida(this.getUnidadesComida());
+					this.tela.mostrarOuro(this.getUnidadesOuro());
+					Thread.sleep(100 * 500);
+					this.setNivelAldeoes(this.getNivelAldeoes() + 1);
+					this.getPrincipal().getVila().subirNivelAldeoes(this.nivelAldeoes);
+					evoluiu = true;
+					this.setEvoluiuAldeao(true);
+					this.tela.mostrarPrefeitura("Parada", Color.ORANGE);
+				} catch (InterruptedException e) {
+					if (!evoluiu) {
+						this.addUnidadesComida(5000);
+						this.addUnidadesOuro(5000);
+						this.tela.mostrarComida(this.getUnidadesComida());
+						this.tela.mostrarOuro(this.getUnidadesOuro());
+					}
+					this.setTipoEvolucao("");
+					this.run();
+					System.out.println("Parou evolução Aldeão");
+				}
+			} else {
+
+				String msg = "";
+
+				if (this.getUnidadesComida() < 5000 && this.getUnidadesOuro() >= 5000)
+					msg += 5000 - this.getUnidadesComida() + " de comida";
+
+				else if (this.getUnidadesComida() >= 5000 && this.getUnidadesOuro() < 5000)
+					msg += 5000 - this.getUnidadesOuro() + " de ouro";
+
+				else
+					msg += (5000 - this.getUnidadesComida()) + " de comida e " + (5000 - this.getUnidadesOuro())
+							+ " de ouro";
+
+				this.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
 			}
 		} else {
-
-			String msg = "";
-
-			if (this.getUnidadesComida() < 5000 && this.getUnidadesOuro() >= 5000)
-				msg += 5000 - this.getUnidadesComida() + " de comida";
-
-			else if (this.getUnidadesComida() >= 5000 && this.getUnidadesOuro() < 5000)
-				msg += 5000 - this.getUnidadesOuro() + " de ouro";
-
-			else
-				msg += (5000 - this.getUnidadesComida()) + " de comida e " + (5000 - this.getUnidadesOuro())
-						+ " de ouro";
-
-			this.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
+			this.getPrincipal().mostrarMensagemErro("Erro", "Os aldeões já estão no nível máximo!");
 		}
 		this.setTipoEvolucao("");
 	}
 
 	public void evoluirFazenda() {
-		if (this.unidadesComida >= 500 && this.unidadesOuro >= 5000) {
-			if (this.getPrincipal().getVila().getFazenda(0).getCapacidade() != 10) {
-				try {
-					Thread.sleep(5000);
-					this.addUnidadesComida(-500);
-					this.addUnidadesOuro(-5000);
-					this.getPrincipal().getVila().subirNivelFazenda();
-				} catch (InterruptedException e) {
-					this.setTipoEvolucao("");
-					this.run();
-					System.out.println("Erro evolução Fazenda");
+		if (!this.getEvoluiuFazendas()) {
+			if (this.unidadesComida >= 500 && this.unidadesOuro >= 5000) {
+				if (this.getPrincipal().getVila().getFazenda(0).getCapacidade() != 10) {
+					Boolean evoluiu = false;
+					try {
+						this.tela.mostrarPrefeitura("Evoluindo fazendas...", Color.GREEN);
+						this.addUnidadesComida(-500);
+						this.addUnidadesOuro(-5000);
+						this.tela.mostrarComida(this.getUnidadesComida());
+						this.tela.mostrarOuro(this.getUnidadesOuro());
+						Thread.sleep(100 * 500);
+						this.getPrincipal().getVila().subirNivelFazenda();
+						evoluiu = true;
+						this.tela.mostrarPrefeitura("Parada", Color.ORANGE);
+						this.setEvoluiuFazendas(true);
+					} catch (InterruptedException e) {
+						if (!evoluiu) {
+							this.addUnidadesComida(500);
+							this.addUnidadesOuro(5000);
+							this.tela.mostrarComida(this.getUnidadesComida());
+							this.tela.mostrarOuro(this.getUnidadesOuro());
+						}
+						this.setTipoEvolucao("");
+						this.run();
+						System.out.println("Parou evolução Fazenda");
+					}
 				}
+
 			} else {
-				this.getPrincipal().mostrarMensagemErro("Erro", "As fazendas já estão no nível máximo!");
+
+				String msg = "";
+
+				if (this.getUnidadesComida() < 500 && this.getUnidadesOuro() >= 5000)
+					msg += 500 - this.getUnidadesComida() + " de comida";
+
+				else if (this.getUnidadesComida() >= 500 && this.getUnidadesOuro() < 5000)
+					msg += 5000 - this.getUnidadesOuro() + " de ouro";
+
+				else
+					msg += (500 - this.getUnidadesComida()) + " de comida e " + (5000 - this.getUnidadesOuro())
+							+ " de ouro";
+
+				this.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
 			}
-
-		} else {
-
-			String msg = "";
-
-			if (this.getUnidadesComida() < 500 && this.getUnidadesOuro() >= 5000)
-				msg += 500 - this.getUnidadesComida() + " de comida";
-
-			else if (this.getUnidadesComida() >= 500 && this.getUnidadesOuro() < 5000)
-				msg += 5000 - this.getUnidadesOuro() + " de ouro";
-
-			else
-				msg += (500 - this.getUnidadesComida()) + " de comida e " + (5000 - this.getUnidadesOuro())
-						+ " de ouro";
-
-			this.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
-		}
+		} else
+			this.getPrincipal().mostrarMensagemErro("Erro", "As fazendas já estão no nível máximo!");
 		this.setTipoEvolucao("");
 	}
 
 	public void evoluirMinaDeOuro() {
-		if (this.unidadesComida >= 2000 && this.unidadesOuro >= 1000) {
-			if (this.getPrincipal().getVila().getMinaOuro(0).getCapacidade() != 10) {
-				try {
-					Thread.sleep(5000);
-					this.addUnidadesComida(-2000);
-					this.addUnidadesOuro(-1000);
-					this.getPrincipal().getVila().subirNivelMinasDeOuro();
-				} catch (InterruptedException e) {
-					this.setTipoEvolucao("");
-					this.run();
-					System.out.println("Erro evolução Mina de ouro");
+		if (!this.getEvoluiuMinas()) {
+			if (this.unidadesComida >= 2000 && this.unidadesOuro >= 1000) {
+				if (this.getPrincipal().getVila().getMinaOuro(0).getCapacidade() != 10) {
+					Boolean evoluiu = false;
+					try {
+						this.tela.mostrarPrefeitura("Evoluindo minas...", Color.GREEN);
+						this.addUnidadesComida(-2000);
+						this.addUnidadesOuro(-1000);
+						this.tela.mostrarComida(this.getUnidadesComida());
+						this.tela.mostrarOuro(this.getUnidadesOuro());
+						Thread.sleep(100 * 500);
+						this.getPrincipal().getVila().subirNivelMinasDeOuro();
+						evoluiu = true;
+						this.tela.mostrarPrefeitura("Parada", Color.ORANGE);
+						this.setEvoluiuMinas(true);
+					} catch (InterruptedException e) {
+						if (!evoluiu) {
+							this.addUnidadesComida(2000);
+							this.addUnidadesOuro(1000);
+							this.tela.mostrarComida(this.getUnidadesComida());
+							this.tela.mostrarOuro(this.getUnidadesOuro());
+						}
+						this.setTipoEvolucao("");
+						this.run();
+						System.out.println("Parou evolução Mina de ouro");
+					}
 				}
+
 			} else {
-				this.getPrincipal().mostrarMensagemErro("Erro", "As minas de ouro já estão no nível máximo!");
+
+				String msg = "";
+
+				if (this.getUnidadesComida() < 2000 && this.getUnidadesOuro() >= 1000)
+					msg += 2000 - this.getUnidadesComida() + " de comida";
+
+				else if (this.getUnidadesComida() >= 2000 && this.getUnidadesOuro() < 1000)
+					msg += 1000 - this.getUnidadesOuro() + " de ouro";
+
+				else
+					msg += (2000 - this.getUnidadesComida()) + " de comida e " + (1000 - this.getUnidadesOuro())
+							+ " de ouro";
+
+				this.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
 			}
+		} else
+			this.getPrincipal().mostrarMensagemErro("Erro", "As minas de ouro já estão no nível máximo!");
 
-		} else {
-
-			String msg = "";
-
-			if (this.getUnidadesComida() < 2000 && this.getUnidadesOuro() >= 1000)
-				msg += 2000 - this.getUnidadesComida() + " de comida";
-
-			else if (this.getUnidadesComida() >= 2000 && this.getUnidadesOuro() < 1000)
-				msg += 1000 - this.getUnidadesOuro() + " de ouro";
-
-			else
-				msg += (2000 - this.getUnidadesComida()) + " de comida e " + (1000 - this.getUnidadesOuro())
-						+ " de ouro";
-
-			this.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
-		}
 		this.setTipoEvolucao("");
 	}
 
