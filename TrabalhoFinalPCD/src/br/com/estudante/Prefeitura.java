@@ -10,6 +10,7 @@ public class Prefeitura extends Thread {
 	private Tela tela;
 	private int nivelAldeoes;
 	private String tipoEvolucao;
+	private Boolean acabou = false;
 
 	/*
 	 * Constructor
@@ -27,13 +28,17 @@ public class Prefeitura extends Thread {
 	}
 
 	public void run() {
-		while (true) {
+		while (!acabou) {
+			try {
+				synchronized (this) {
+					this.wait();
+				}
+			} catch (InterruptedException e) {
+			}
 			this.tela.mostrarComida(this.unidadesComida);
 			this.tela.mostrarOuro(this.unidadesOuro);
 			this.tela.mostrarOferendaFe(this.oferendasFe);
-			if (this.getTipoEvolucao() != "") {
-				this.evoluir();
-			}
+			this.evoluir();
 
 		}
 	}
@@ -233,5 +238,13 @@ public class Prefeitura extends Thread {
 			this.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
 		}
 		this.setTipoEvolucao("");
+	}
+
+	public Boolean acabou() {
+		return acabou;
+	}
+
+	public void setAcabou(Boolean acabou) {
+		this.acabou = acabou;
 	}
 }

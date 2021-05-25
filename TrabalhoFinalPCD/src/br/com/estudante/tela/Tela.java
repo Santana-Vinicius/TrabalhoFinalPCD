@@ -41,6 +41,7 @@ import br.com.estudante.Aldeao;
 import br.com.estudante.ClienteTCP;
 import br.com.estudante.Fazenda;
 import br.com.estudante.Jogador;
+import br.com.estudante.Maravilha;
 import br.com.estudante.MinaOuro;
 import br.com.estudante.Status;
 import br.com.estudante.Vila;
@@ -558,7 +559,7 @@ public class Tela extends JFrame {
 		this.pbMaravilha = new JProgressBar();
 		this.pbMaravilha.setOrientation(SwingConstants.VERTICAL);
 		this.pbMaravilha.setBounds(225, 20, 30, 170);
-		this.pbMaravilha.setMaximum(100000);
+		this.pbMaravilha.setMaximum(50);
 		this.pbMaravilha.setStringPainted(true);
 		this.pbMaravilha.setEnabled(false);
 		this.pnMaravilha.add(pbMaravilha);
@@ -935,9 +936,18 @@ public class Tela extends JFrame {
 		}
 		try {
 			if (this.vila != null) {
+				Maravilha maravilha = this.getVila().getMaravilha();
 				for (Aldeao aldeao : this.vila.getAldeoes()) {
+					aldeao.setTipoConstrucao("");
 					aldeao.setStatus(Status.MORTO);
+					if (maravilha != null) {
+						maravilha.procuraRemoveConstrutor(aldeao);
+					}
 				}
+
+				this.vila.getPrefeitura().setAcabou(true);
+				if (this.vila.getTemplo() != null)
+					this.vila.getTemplo().setAcabou(true);
 				this.limparAldeoes();
 				this.limparFazendas();
 				this.limparMinas();
@@ -1049,16 +1059,18 @@ public class Tela extends JFrame {
 				if (aldeaoSelecionado.getFazenda() != null) {
 					Fazenda fazenda = aldeaoSelecionado.getFazenda();
 					fazenda.removeFazendeiro(aldeaoSelecionado);
+					aldeaoSelecionado.setFazenda(null);
 				} else if (aldeaoSelecionado.getMinaOuro() != null) {
 					MinaOuro minaOuro = aldeaoSelecionado.getMinaOuro();
 					minaOuro.removeMinerador(aldeaoSelecionado);
+					aldeaoSelecionado.setMinaOuro(null);
 				} else if (this.getVila().getMaravilha() != null) {
 					this.getVila().getMaravilha().procuraRemoveConstrutor(aldeaoSelecionado);
 					aldeaoSelecionado.setTipoConstrucao("");
 				} else if (this.getVila().getTemplo() != null) {
 					this.getVila().getTemplo().procuraremoveReligioso(aldeaoSelecionado);
 				}
-				aldeaoSelecionado.setStatus(Status.PARADO);
+				aldeaoSelecionado.interrupt();
 				this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
 			}
 		}
@@ -1079,32 +1091,38 @@ public class Tela extends JFrame {
 					this.mostrarMensagemErro("Erro", "Já existe um templo");
 
 				} else {
-					if (!aldeaoSelecionado.getStatus().equals(Status.PARADO.getDescription())
-							&& !aldeaoSelecionado.getStatus().equals(Status.CONSTRUINDO.getDescription())) {
-						aldeaoSelecionado.interrupt();
+					if (!aldeaoSelecionado.getStatus().equals(Status.PARADO.getDescription())) {
 						switch (aldeaoSelecionado.getStatus()) {
 						case "Minerando":
+							aldeaoSelecionado.interrupt();
 							aldeaoSelecionado.getMinaOuro().removeMinerador(aldeaoSelecionado);
+							System.out.println("Aldeão saiu da mina " + aldeaoSelecionado.getMinaOuro().getNome());
+							aldeaoSelecionado.setMinaOuro(null);
 							break;
 
 						case "Cultivando":
+							aldeaoSelecionado.interrupt();
 							aldeaoSelecionado.getFazenda().removeFazendeiro(aldeaoSelecionado);
+							System.out.println("Aldeão saiu da fazenda " + aldeaoSelecionado.getFazenda().getNome());
+							aldeaoSelecionado.setFazenda(null);
 							break;
 						case "Orando":
+							aldeaoSelecionado.interrupt();
 							this.getVila().getTemplo().removeReligioso(aldeaoSelecionado);
+							System.out.println("Aldeão saiu do templo ");
 							break;
 						}
 					}
-
 					aldeaoSelecionado.setTipoConstrucao(qual);
 					aldeaoSelecionado.setStatus(Status.CONSTRUINDO);
 					synchronized (aldeaoSelecionado) {
 						aldeaoSelecionado.notify();
 					}
 					this.mostrarAldeao(aldeao, aldeaoSelecionado.getStatus());
-					if (this.getVila().getTemplo() != null)
-						this.habilitarTemplo();
-
+					if (qual.equals("Templo")) {
+						if (this.getVila().getTemplo() != null)
+							this.habilitarTemplo();
+					}
 				}
 			}
 		}
@@ -1125,28 +1143,47 @@ public class Tela extends JFrame {
 					if (!fazenda.procuraAldeao(novoFazendeiro.getNome())) {
 						if (fazenda.getQtdFazendeiros() < fazenda.getCapacidade()) {
 							if (!novoFazendeiro.getStatus().equals(Status.PARADO.getDescription())) {
-								if (!novoFazendeiro.getStatus().equals(Status.CULTIVANDO.getDescription()))
-									novoFazendeiro.interrupt();
 								switch (novoFazendeiro.getStatus()) {
 								case "Cultivando":
+									Fazenda fazendaTemp = novoFazendeiro.getFazenda();
 									novoFazendeiro.getFazenda().removeFazendeiro(novoFazendeiro);
+									novoFazendeiro.setFazenda(null);
+									this.mostrarFazenda(Integer.valueOf(fazendaTemp.getNome()),
+											fazendaTemp.getNomeAldeoes());
+									System.out.println("Aldeão saiu da fazenda " + fazendaTemp.getNome());
 									break;
 
 								case "Minerando":
+									novoFazendeiro.interrupt();
 									novoFazendeiro.getMinaOuro().removeMinerador(novoFazendeiro);
+									System.out.println("Aldeão saiu da mina " + novoFazendeiro.getMinaOuro().getNome());
+									novoFazendeiro.setMinaOuro(null);
 									break;
 
 								case "Orando":
+									novoFazendeiro.interrupt();
 									this.getVila().getTemplo().removeReligioso(novoFazendeiro);
+									System.out.println("Aldeão saiu do templo ");
 									break;
 								}
 							}
+							if (novoFazendeiro.getFazenda() != null) {
+								novoFazendeiro.getFazenda().removeFazendeiro(novoFazendeiro);
+								novoFazendeiro.setFazenda(null);
+							}
+
+							if (novoFazendeiro.getMinaOuro() != null) {
+								novoFazendeiro.getMinaOuro().removeMinerador(novoFazendeiro);
+								novoFazendeiro.setMinaOuro(null);
+							}
+
 							novoFazendeiro.setStatus(Status.CULTIVANDO);
+							novoFazendeiro.setFazenda(fazenda);
+							fazenda.addFazendeiro(novoFazendeiro);
 							synchronized (novoFazendeiro) {
 								novoFazendeiro.notify();
 							}
-							novoFazendeiro.setFazenda(fazenda);
-							fazenda.addFazendeiro(novoFazendeiro);
+
 							this.mostrarAldeao(aldeao, novoFazendeiro.getStatus());
 						} else
 							mostrarMensagemErro("Erro",
@@ -1169,32 +1206,51 @@ public class Tela extends JFrame {
 				this.mostrarMensagemErro("Erro", "Aldeão está morto");
 			} else {
 				MinaOuro minaOuro = this.vila.getMinaOuro(numeroMinaOuro);
+				System.out.println("Pegou a mina " + numeroMinaOuro);
 				synchronized (minaOuro) {
 					if (!minaOuro.procuraAldeao(novoMinerador.getNome())) {
 						if (minaOuro.getQtdMineradores() < minaOuro.getCapacidade()) {
 							if (!novoMinerador.getStatus().equals(Status.PARADO.getDescription())) {
-								if (!novoMinerador.getStatus().equals(Status.MINERANDO.getDescription()))
-									novoMinerador.interrupt();
 								switch (novoMinerador.getStatus()) {
 								case "Cultivando":
+									novoMinerador.interrupt();
 									novoMinerador.getFazenda().removeFazendeiro(novoMinerador);
+									novoMinerador.setFazenda(null);
 									break;
 
 								case "Minerando":
-									novoMinerador.getMinaOuro().removeMinerador(novoMinerador);
+									MinaOuro minaTemp = novoMinerador.getMinaOuro();
+									minaTemp.removeMinerador(novoMinerador);
+									novoMinerador.setMinaOuro(null);
+									this.mostrarMinaOuro(Integer.valueOf(minaTemp.getNome()),
+											minaTemp.getNomeAldeoes());
+									System.out.println("Aldeão saiu da mina " + minaTemp.getNome());
 									break;
 
 								case "Orando":
+									novoMinerador.interrupt();
 									this.getVila().getTemplo().removeReligioso(novoMinerador);
+									System.out.println("Aldeão saiu do templo ");
 									break;
 								}
 							}
+							if (novoMinerador.getFazenda() != null) {
+								novoMinerador.getFazenda().removeFazendeiro(novoMinerador);
+								novoMinerador.setFazenda(null);
+							}
+
+							if (novoMinerador.getMinaOuro() != null) {
+								novoMinerador.getMinaOuro().removeMinerador(novoMinerador);
+								novoMinerador.setMinaOuro(null);
+							}
+
 							novoMinerador.setStatus(Status.MINERANDO);
+							novoMinerador.setMinaOuro(minaOuro);
+							minaOuro.addMinerador(novoMinerador);
 							synchronized (novoMinerador) {
 								novoMinerador.notify();
 							}
-							novoMinerador.setMinaOuro(minaOuro);
-							minaOuro.addMinerador(novoMinerador);
+
 							this.mostrarAldeao(aldeao, novoMinerador.getStatus());
 						} else
 							mostrarMensagemErro("Erro",
@@ -1217,22 +1273,25 @@ public class Tela extends JFrame {
 				if (this.getVila().getTemplo() != null) {
 					if (!novoReligioso.getStatus().equals(Status.PARADO.getDescription())
 							&& !novoReligioso.getStatus().equals(Status.ORANDO.getDescription())) {
-						novoReligioso.interrupt();
 						switch (novoReligioso.getStatus()) {
 						case "Cultivando":
+							novoReligioso.interrupt();
 							novoReligioso.getFazenda().removeFazendeiro(novoReligioso);
+							novoReligioso.setFazenda(null);
 							break;
 
 						case "Minerando":
+							novoReligioso.interrupt();
 							novoReligioso.getMinaOuro().removeMinerador(novoReligioso);
+							novoReligioso.setMinaOuro(null);
 							break;
 						}
 					}
 					novoReligioso.setStatus(Status.ORANDO);
+					this.getVila().getTemplo().addReligioso(novoReligioso);
 					synchronized (novoReligioso) {
 						novoReligioso.notify();
 					}
-					this.getVila().getTemplo().addReligioso(novoReligioso);
 					this.mostrarAldeao(aldeao, novoReligioso.getStatus());
 				} else
 					this.mostrarMensagemErro("Erro", "O templo ainda não foi criado");
@@ -1271,10 +1330,17 @@ public class Tela extends JFrame {
 
 	public void comandoPrefeituraEvoluir(String strEvolucao) {
 		this.getVila().getPrefeitura().setTipoEvolucao(strEvolucao);
+		synchronized (this.getVila().getPrefeitura()) {
+			this.getVila().getPrefeitura().notify();
+		}
 	}
 
 	public void comandoTemploEvoluir(String strEvolucao) {
 		this.getVila().getTemplo().setTipoEvolucao(strEvolucao);
+		synchronized (this.getVila().getTemplo()) {
+			this.getVila().getTemplo().notify();
+		}
+
 	}
 
 	public void comandoTemploLancar(String strPraga, String strInimigo) {
@@ -1323,11 +1389,19 @@ public class Tela extends JFrame {
 		return this.tpJogo;
 	}
 
+	public JProgressBar getBarraMaravilha() {
+		return this.pbMaravilha;
+	}
+
 	public Vila getVila() {
 		return vila;
 	}
 
 	public String getCivilizacao() {
 		return this.civilizacao;
+	}
+
+	public ClienteTCP getClienteTCP() {
+		return this.clienteTCP;
 	}
 }

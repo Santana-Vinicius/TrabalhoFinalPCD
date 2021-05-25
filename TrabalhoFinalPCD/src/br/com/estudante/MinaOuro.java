@@ -21,11 +21,11 @@ public class MinaOuro {
 		setCapacidade(5);
 	}
 
-	public String getNome() {
+	public synchronized String getNome() {
 		return nome;
 	}
 
-	public void setNome(String name) {
+	public synchronized void setNome(String name) {
 		this.nome = name;
 	}
 
@@ -33,34 +33,36 @@ public class MinaOuro {
 		return capacidade;
 	}
 
-	public void setCapacidade(int capacidade) {
+	public synchronized void setCapacidade(int capacidade) {
 		this.capacidade = capacidade;
 	}
 
-	public Tela getPrincipal() {
+	public synchronized Tela getPrincipal() {
 		return tela;
 	}
 
-	public void setPrincipal(Tela tela) {
+	public synchronized void setPrincipal(Tela tela) {
 		this.tela = tela;
 	}
 
-	public void setNomeAldeoes() {
+	public synchronized void setNomeAldeoes() {
 		this.nomeAldeoes = "";
 		SortedSet<String> nomes = new TreeSet<String>();
 
-		for (Aldeao minerador : mineradores)
-			nomes.add(String.valueOf(Integer.valueOf(minerador.getNome()) + 1));
+		if (this.mineradores.size() > 0) {
+			for (Aldeao minerador : mineradores)
+				nomes.add(String.valueOf(Integer.valueOf(minerador.getNome()) + 1));
 
-		for (String nomeAldeao : nomes) {
-			this.nomeAldeoes += nomeAldeao + " ";
+			for (String nomeAldeao : nomes) {
+				this.nomeAldeoes += nomeAldeao + " ";
+			}
 		}
 		this.tela.mostrarMinaOuro(Integer.valueOf(this.getNome()), nomeAldeoes);
 	}
 
 	public synchronized void addMinerador(Aldeao aldeao) {
 		boolean tem = false;
-		for (Aldeao minerador : mineradores) {
+		for (Aldeao minerador : getMineradores()) {
 			if (minerador.equals(aldeao))
 				tem = true;
 		}
@@ -71,24 +73,26 @@ public class MinaOuro {
 
 	}
 
-	public boolean procuraAldeao(String nome) {
-		for (Aldeao aldeao : mineradores) {
+	public synchronized boolean procuraAldeao(String nome) {
+		for (Aldeao aldeao : getMineradores()) {
 			if (aldeao.getNome().equals(nome))
 				return true;
 		}
 		return false;
 	}
 
-	public ArrayList<Aldeao> getMineradores() {
+	public synchronized ArrayList<Aldeao> getMineradores() {
 		return this.mineradores;
 	}
 
 	public synchronized void removeMinerador(Aldeao aldeao) {
-		this.mineradores.remove(aldeao);
+//		System.out.println("Qtd mineradores (Mina " + this.getNome() + ") antes: " + this.getQtdMineradores());
+		this.getMineradores().remove(aldeao);
+//		System.out.println("Qtd mineradores (Mina " + this.getNome() + ") depois: " + this.getQtdMineradores());
 		this.setNomeAldeoes();
 	}
 
-	public String getNomeAldeoes() {
+	public synchronized String getNomeAldeoes() {
 		return nomeAldeoes;
 	}
 

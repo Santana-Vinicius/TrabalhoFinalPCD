@@ -38,9 +38,11 @@ public class ServidorTCP extends Thread {
 	}
 
 	public void run() {
+		ObjectInputStream entrada = null;
+		ObjectOutputStream saida = null;
 		try {
-			ObjectInputStream entrada = new ObjectInputStream(this.conexao.getInputStream());
-			ObjectOutputStream saida = new ObjectOutputStream(this.conexao.getOutputStream());
+			entrada = new ObjectInputStream(this.conexao.getInputStream());
+			saida = new ObjectOutputStream(this.conexao.getOutputStream());
 			String acao;
 			try {
 				while (!(acao = (String) entrada.readObject()).equals("CMD|DESCONECTAR")) {
@@ -159,6 +161,16 @@ public class ServidorTCP extends Thread {
 						System.out.println("Retornou " + alvo + " para o atacante");
 						saidaAtacante.writeObject(nomePraga);
 						System.out.println("Retornou " + nomePraga + " para o atacante");
+						break;
+
+					case "Vencer":
+						Jogador jogadorVencedor = (Jogador) entrada.readObject();
+
+						for (ObjectOutputStream saidaJogador : saidas) {
+							saidaJogador.writeObject("Terminar");
+							saidaJogador.writeObject(jogadorVencedor);
+						}
+						break;
 					}
 				}
 			} catch (SocketException e) {
@@ -221,6 +233,57 @@ public class ServidorTCP extends Thread {
 			this.conexao.close();
 			System.out.println("Cliente desconectado: " + conexao.getInetAddress().getHostAddress());
 		} catch (IOException e) {
+			int i = -1;
+			if (saida != null) {
+				for (ObjectOutputStream saidaJogador : this.saidas) {
+					i++;
+					if (saidaJogador.equals(saida))
+						break;
+				}
+
+				saidas.remove(saida);
+			}
+
+			if (this.jogadores.size() > 0 && i > -1) {
+				Jogador jogadorDesc = this.jogadores.get(i);
+				try {
+					if (jogadores.get(0).equals(jogadorDesc)) {
+						for (int j = this.saidas.size() - 1; j > 0; j--) {
+							System.out.println("Manda Fechar para a saída " + j);
+							saidas.get(j).writeObject("Fechar");
+							saidas.get(j).close();
+							System.out.println("Saída " + j + " fechada");
+						}
+						System.out.println("Manda Fechar para o host ");
+						saida.writeObject("Fechar");
+						this.saidas.removeAll(saidas);
+						System.out.println("Zera a lista de saidas");
+						this.jogadores.removeAll(jogadores);
+						System.out.println("Zera a lista de jogadores");
+						this.saidas = new ArrayList<ObjectOutputStream>();
+						this.jogadores = new ArrayList<Jogador>();
+					} else {
+						this.jogadores.remove(jogadorDesc);
+						for (ObjectOutputStream jogador : this.saidas) {
+							System.out.println("Servidor manda \"Remover jogador\"");
+							jogador.writeObject("Remover jogador");
+							System.out.println("Manda jogador desconectado");
+							jogador.writeObject(jogadorDesc);
+							i++;
+						}
+					}
+				} catch (IOException e1) {
+					System.out.println("Não foi possível enviar o jogador desconectado para os clientes");
+				}
+
+			}
+			try {
+				saida.close();
+				conexao.close();
+			} catch (IOException e1) {
+
+			}
+
 			System.out.println("Comunicação com o cliente falhou...");
 		} catch (ClassNotFoundException e) {
 			System.out.println("Conversão deu erro...");

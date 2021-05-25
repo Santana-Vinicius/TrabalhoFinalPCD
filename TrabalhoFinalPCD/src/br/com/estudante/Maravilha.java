@@ -16,11 +16,18 @@ public class Maravilha extends Thread {
 	}
 
 	public void run() {
-		while (true) {
-			if (this.construtores.size() > 0) {
-				this.tela.mostrarMaravilha(this.qtdTijolos);
-			}
+		while (this.getQtdTijolos() != 50) {
+				try {
+					synchronized (this) {
+						this.wait();
+					}
+				} catch (InterruptedException e) {
+					
+				}
+			this.tela.mostrarMaravilha(this.qtdTijolos);
 		}
+		this.tela.mostrarMaravilha(this.qtdTijolos);
+		this.tela.getClienteTCP().vencer();
 	}
 
 	public int getQtdConstrutores() {

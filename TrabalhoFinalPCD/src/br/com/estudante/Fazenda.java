@@ -24,19 +24,19 @@ public class Fazenda {
 	/*
 	 * Getters and Setters
 	 */
-	public String getNome() {
+	public synchronized String getNome() {
 		return nome;
 	}
 
-	public void setNome(String name) {
+	public synchronized void setNome(String name) {
 		this.nome = name;
 	}
 
-	public Tela getPrincipal() {
+	public synchronized Tela getPrincipal() {
 		return tela;
 	}
 
-	public void setPrincipal(Tela tela) {
+	public synchronized void setPrincipal(Tela tela) {
 		this.tela = tela;
 	}
 
@@ -44,7 +44,7 @@ public class Fazenda {
 		return capacidade;
 	}
 
-	public void setCapacidade(int capacidade) {
+	public synchronized void setCapacidade(int capacidade) {
 		this.capacidade = capacidade;
 	}
 
@@ -52,11 +52,14 @@ public class Fazenda {
 		this.nomeAldeoes = "";
 		SortedSet<String> nomes = new TreeSet<String>();
 
-		for (Aldeao fazendeiro : fazendeiros)
-			nomes.add(String.valueOf(Integer.valueOf(fazendeiro.getNome()) + 1));
+		if (this.fazendeiros.size() > 0) {
+			for (Aldeao fazendeiro : fazendeiros) {
+				nomes.add(String.valueOf(Integer.valueOf(fazendeiro.getNome()) + 1));
+			}
 
-		for (String nomeAldeao : nomes) {
-			this.nomeAldeoes += nomeAldeao + " ";
+			for (String nomeAldeao : nomes) {
+				this.nomeAldeoes += nomeAldeao + " ";
+			}
 		}
 		this.tela.mostrarFazenda(Integer.valueOf(this.getNome()), nomeAldeoes);
 
@@ -64,7 +67,7 @@ public class Fazenda {
 
 	public synchronized void addFazendeiro(Aldeao aldeao) {
 		boolean tem = false;
-		for (Aldeao fazendeiro : fazendeiros) {
+		for (Aldeao fazendeiro : getFazendeiros()) {
 			if (fazendeiro.equals(aldeao))
 				tem = true;
 		}
@@ -75,11 +78,12 @@ public class Fazenda {
 	}
 
 	public synchronized void removeFazendeiro(Aldeao aldeao) {
-		this.fazendeiros.remove(aldeao);
+		this.getFazendeiros().remove(aldeao);
+//		System.out.println();
 		this.setNomeAldeoes();
 	}
-	
-	public boolean procuraAldeao (String nome) {
+
+	public boolean procuraAldeao(String nome) {
 		for (Aldeao aldeao : fazendeiros) {
 			if (aldeao.getNome().equals(nome))
 				return true;
@@ -95,14 +99,14 @@ public class Fazenda {
 		return this.fazendeiros.size();
 	}
 
-	public ArrayList<Aldeao> getFazendeiros() {
+	public synchronized ArrayList<Aldeao> getFazendeiros() {
 		return this.fazendeiros;
 	}
 
 	/*
 	 * Funcoes da Fazenda
 	 */
-	public Integer cultivar(int nivelAldeao) {
+	public synchronized Integer cultivar(int nivelAldeao) {
 
 		return Utils.calculaComida(nivelAldeao);
 	}

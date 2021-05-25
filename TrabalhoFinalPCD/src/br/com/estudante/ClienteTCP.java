@@ -99,7 +99,6 @@ public class ClienteTCP extends Thread {
 					System.out.println("Não está mais escutando");
 				} else if (fazer.equals("Iniciar jogo")) {
 					this.cliente.limparJogadores();
-					this.cliente.getVila().getPrefeitura().start();
 					int i = 1;
 					for (Jogador jogador : jogadoresConectados) {
 						jogador.setSituacao("Jogando");
@@ -120,7 +119,7 @@ public class ClienteTCP extends Thread {
 					case "Nuvem de gafanhotos":
 						if (this.cliente.getVila().isProtecaoGafanhotos()) {
 							this.cliente.mostrarMensagemErro("Tentativa de Ataque", jogadorAtacante
-									+ " tentou lançar uma nuvem de gafanhotos em sua vila!\n Mas falhou porque você tem proteção!");
+									+ " tentou lançar uma nuvem de gafanhotos em sua vila!\nMas falhou porque você tem proteção!");
 							System.out.println("Mostrou a telinha para o atacado");
 							this.saida.writeObject("Resultado ataque");
 							this.saida.writeObject("Falha");
@@ -153,7 +152,7 @@ public class ClienteTCP extends Thread {
 								}
 							}
 							this.cliente.mostrarMensagemErro("Tentativa de Ataque", jogadorAtacante
-									+ " lançou uma nuvem de gafanhotos em sua vila!\n Você perdeu metade das suas fazendas!");
+									+ " lançou uma nuvem de gafanhotos em sua vila!\nVocê perdeu metade das suas fazendas!");
 							System.out.println("Mostrou a telinha para o atacado");
 							this.saida.writeObject("Resultado ataque");
 							this.saida.writeObject("Sucesso");
@@ -166,7 +165,7 @@ public class ClienteTCP extends Thread {
 					case "Morte dos primogênitos":
 						if (this.cliente.getVila().isProtecaoPrimogenitos()) {
 							this.cliente.mostrarMensagemErro("Tentativa de Ataque", jogadorAtacante
-									+ " tentou lançar a praga Morte dos primogênitos em sua vila!\n Mas falhou porque você tem proteção!");
+									+ " tentou lançar a praga Morte dos primogênitos em sua vila!\nMas falhou porque você tem proteção!");
 							System.out.println("Mostrou a telinha para o atacado");
 							this.saida.writeObject("Resultado ataque");
 							this.saida.writeObject("Falha");
@@ -197,7 +196,7 @@ public class ClienteTCP extends Thread {
 								}
 							}
 							this.cliente.mostrarMensagemErro("Tentativa de Ataque", jogadorAtacante
-									+ " lançou a praga Morte dos primogênitos em sua vila!\n Você perdeu metade dos seus aldeões!");
+									+ " lançou a praga Morte dos primogênitos em sua vila!\nVocê perdeu metade dos seus aldeões!");
 							System.out.println("Mostrou a telinha para o atacado");
 							this.saida.writeObject("Resultado ataque");
 							this.saida.writeObject("Sucesso");
@@ -293,11 +292,12 @@ public class ClienteTCP extends Thread {
 								if (qtdTijolos > 1) {
 									qtdTijolos /= 2;
 									maravilha.setQtdTijolos(-qtdTijolos);
-									System.out.println("Maravilha agora tem " + maravilha.getQtdTijolos() + " tijolos.");
+									System.out
+											.println("Maravilha agora tem " + maravilha.getQtdTijolos() + " tijolos.");
 								}
 							}
 							this.cliente.mostrarMensagemErro("Tentativa de Ataque", jogadorAtacante
-									+ " lançou lançar uma chuva de pedras em sua vila!\nVocê perdeu:\nMetade das suas fazendas"
+									+ " lançou uma chuva de pedras em sua vila!\nVocê perdeu:\nMetade das suas fazendas"
 									+ "\nMetade das suas minas de ouro\nMetade da maravilha\nMetade dos aldeões");
 							System.out.println("Mostrou a telinha para o atacado");
 							this.saida.writeObject("Resultado ataque");
@@ -336,6 +336,23 @@ public class ClienteTCP extends Thread {
 						System.out.println("aeeeeee funfou o ataque");
 						this.cliente.mostrarMensagemErro("Situção do Ataque",
 								"Seu ataque à vila do inimigo " + nomeAlvo + " foi um sucesso!\n Ele " + complemento);
+					}
+				} else if (fazer.equals("Terminar")) {
+					Jogador jogadorVencedor = (Jogador) entrada.readObject();
+
+					if (!this.jogador.equals(jogadorVencedor)) {
+						this.cliente.mostrarMensagemErro("Fim de jogo", "A civilização "
+								+ jogadorVencedor.getCivilizacao()
+								+ " conseguiu o triunfo e se tornou a maior potência do mundo graças ao governo de "
+								+ jogadorVencedor.getNome());
+					} else {
+						this.cliente.mostrarMensagemErro("Fim de jogo",
+								"Graças aos seus esforços, a civilização " + jogadorVencedor.getCivilizacao()
+										+ " se tornou a maior potência do mundo\nParabéns!!!");
+
+					}
+					if (this.jogador.equals(this.jogadoresConectados.get(0))) {
+						this.desconectar();
 					}
 				}
 			}
@@ -460,6 +477,16 @@ public class ClienteTCP extends Thread {
 		} catch (IOException e) {
 			System.out.println(this.conexao.getInetAddress().getHostAddress() + " falhou em se conectar ao servidor");
 		}
+	}
+
+	public void vencer() {
+		try {
+			this.saida.writeObject("Vencer");
+			this.saida.writeObject(this.jogador);
+		} catch (IOException e) {
+
+		}
+
 	}
 
 	public void desconectar() {

@@ -1,4 +1,5 @@
 package br.com.estudante;
+
 import java.util.ArrayList;
 
 import br.com.estudante.tela.Tela;
@@ -20,9 +21,9 @@ public class Vila {
 	 * Constructor da Vila
 	 */
 	public Vila(Tela tela) {
-		System.out.println("Criando a vila!");
 		this.tela = tela;
 		this.prefeitura = new Prefeitura(tela);
+		this.prefeitura.start();
 		setAldeoes(geraAldeoes());
 		addFazenda(new Fazenda("0", this.tela));
 		addMinaOuro(new MinaOuro("0", this.tela));
@@ -33,10 +34,6 @@ public class Vila {
 
 	public Vila() {
 	}
-
-	/*
-	 * To string
-	 */
 
 	public boolean isProtecaoGafanhotos() {
 		return protecaoGafanhotos;
@@ -73,8 +70,8 @@ public class Vila {
 	public Prefeitura getPrefeitura() {
 		return prefeitura;
 	}
-	
-	public ArrayList<Aldeao> getAldeoes () {
+
+	public ArrayList<Aldeao> getAldeoes() {
 		return this.aldeoes;
 	}
 
@@ -146,7 +143,7 @@ public class Vila {
 		this.minasOuro.add(novo);
 		tela.adicionarMinaOuro(novo.getNome(), "");
 	}
-	
+
 	public void removeMinaOuro(int index) {
 		this.minasOuro.remove(index);
 	}

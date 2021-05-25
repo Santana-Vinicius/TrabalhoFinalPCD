@@ -83,20 +83,20 @@ public class Aldeao extends Thread {
 			System.out.println("O aldeão " + nome + " não pode ser ressucitado");
 	}
 
-	public Fazenda getFazenda() {
+	public synchronized Fazenda getFazenda() {
 		return fazenda;
 	}
 
-	public void setFazenda(Fazenda fazenda) {
+	public synchronized void setFazenda(Fazenda fazenda) {
 		if (this.fazenda != fazenda)
 			this.fazenda = fazenda;
 	}
 
-	public MinaOuro getMinaOuro() {
+	public synchronized MinaOuro getMinaOuro() {
 		return minaOuro;
 	}
 
-	public void setMinaOuro(MinaOuro minaOuro) {
+	public synchronized void setMinaOuro(MinaOuro minaOuro) {
 		if (this.minaOuro != minaOuro)
 			this.minaOuro = minaOuro;
 	}
@@ -142,16 +142,19 @@ public class Aldeao extends Thread {
 			Thread.sleep(500);
 			Integer comidaProduzida = fazenda.cultivar(this.nivel);
 			// Sleep de duas horas para Transportar
+			Fazenda fazendaTemp = this.fazenda;
+			fazendaTemp.removeFazendeiro(this);
+			this.getPrefeitura().getPrincipal().mostrarFazenda(Integer.valueOf(fazendaTemp.getNome()),
+					fazendaTemp.getNomeAldeoes());
 			Thread.sleep(Utils.calculaTempoTransporte(this.nivel, 1000));
+			fazendaTemp.addFazendeiro(this);
+			this.getPrefeitura().getPrincipal().mostrarFazenda(Integer.valueOf(fazendaTemp.getNome()),
+					fazendaTemp.getNomeAldeoes());
 			prefeitura.addUnidadesComida(comidaProduzida);
 			this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
 			this.prefeitura.getPrincipal().mostrarFazenda(Integer.valueOf(this.fazenda.getNome()),
 					this.fazenda.getNomeAldeoes());
 		} catch (InterruptedException e) {
-			fazenda.removeFazendeiro(this);
-			this.prefeitura.getPrincipal().mostrarFazenda(Integer.valueOf(this.fazenda.getNome()),
-					this.fazenda.getNomeAldeoes());
-			this.setFazenda(null);
 			this.setStatus(Status.PARADO);
 			this.run();
 		}
@@ -165,19 +168,20 @@ public class Aldeao extends Thread {
 			Thread.sleep(1000);
 			Integer ouroProduzido = minaOuro.minerar(this.nivel);
 			// Sleep de três horas para Transportar
+			MinaOuro minaTemp = this.minaOuro;
+			minaTemp.removeMinerador(this);
+			this.getPrefeitura().getPrincipal().mostrarMinaOuro(Integer.valueOf(minaTemp.getNome()),
+					minaTemp.getNomeAldeoes());
 			Thread.sleep(Utils.calculaTempoTransporte(this.nivel, 1500));
-			synchronized (minaOuro) {
-				prefeitura.addUnidadesOuro(ouroProduzido);
-				this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
-			}
-			this.prefeitura.getPrincipal().mostrarMinaOuro(Integer.valueOf(this.minaOuro.getNome()), this.minaOuro.getNomeAldeoes());
-
-		} catch (InterruptedException e) {
-			this.setStatus(Status.PARADO);
-			this.minaOuro.removeMinerador(this);
+			minaTemp.addMinerador(this);
 			this.prefeitura.getPrincipal().mostrarMinaOuro(Integer.valueOf(this.minaOuro.getNome()),
 					this.minaOuro.getNomeAldeoes());
-			this.minaOuro = null;
+			prefeitura.addUnidadesOuro(ouroProduzido);
+			this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
+			this.prefeitura.getPrincipal().mostrarMinaOuro(Integer.valueOf(this.minaOuro.getNome()),
+					this.minaOuro.getNomeAldeoes());
+		} catch (InterruptedException e) {
+			this.setStatus(Status.PARADO);
 			this.run();
 		}
 
@@ -191,51 +195,54 @@ public class Aldeao extends Thread {
 			Fazenda fazenda = construirFazenda();
 			if (fazenda != null) {
 				vila.addFazenda(fazenda);
-				this.status = Status.PARADO;
-				this.tipoConstrucao = "";
 			}
-
+			this.status = Status.PARADO;
+			this.tipoConstrucao = "";
 			break;
 		case "Mina de ouro":
 			MinaOuro minaOuro = construirMina();
 			if (minaOuro != null) {
 				vila.addMinaOuro(minaOuro);
-				this.status = Status.PARADO;
-				this.tipoConstrucao = "";
 			}
+			this.status = Status.PARADO;
+			this.tipoConstrucao = "";
 			break;
 		case "Templo":
 			Templo templo = construirTemplo();
-			if (templo != null && this.getStatus() != Status.PARADO.getDescription()) {
+			if (templo != null) {
 				this.getPrefeitura().getPrincipal().mostrarTemplo(templo.getNome(), Color.GRAY);
 				this.getPrefeitura().getPrincipal().habilitarTemplo();
 				vila.setTemplo(templo);
-				this.status = Status.PARADO;
-				this.tipoConstrucao = "";
-			} else {
-				this.prefeitura.addUnidadesComida(2000);
-				this.prefeitura.addUnidadesOuro(2000);
 			}
+			this.status = Status.PARADO;
+			this.tipoConstrucao = "";
 			break;
 		case "Maravilha":
-			if (this.getPrefeitura().getPrincipal().getVila().getMaravilha() == null) {
-				Maravilha maravilha = new Maravilha(this.getPrefeitura(), this.getPrefeitura().getPrincipal());
-				this.getPrefeitura().getPrincipal().getVila().setMaravilha(maravilha);
+			Maravilha maravilha = this.getPrefeitura().getPrincipal().getVila().getMaravilha();
+			if (maravilha == null) {
+				Maravilha maravilhaNova = new Maravilha(this.getPrefeitura(), this.getPrefeitura().getPrincipal());
+				this.getPrefeitura().getPrincipal().getVila().setMaravilha(maravilhaNova);
+				maravilha = maravilhaNova;
 			}
 			Boolean construiu = false;
-			this.getPrefeitura().getPrincipal().getVila().getMaravilha().addConstrutor(this);
-			while (this.getTipoConstrucao().equals("Maravilha")) {
+			maravilha.addConstrutor(this);
+			while (this.getTipoConstrucao().equals("Maravilha")
+					&& this.getPrefeitura().getPrincipal().getBarraMaravilha().getValue() < 50) {
 				if (this.getPrefeitura().getUnidadesComida() >= 1 && this.getPrefeitura().getUnidadesOuro() >= 1) {
 					try {
-						Thread.sleep(500);
 						this.getPrefeitura().addUnidadesComida(-1);
 						this.getPrefeitura().addUnidadesOuro(-1);
+						this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
+						this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
+						Thread.sleep(500);
 						construiu = true;
-						this.getPrefeitura().getPrincipal().getVila().getMaravilha().setQtdTijolos();
-						this.getPrefeitura().getPrincipal().mostrarMaravilha(
-								this.getPrefeitura().getPrincipal().getVila().getMaravilha().getQtdTijolos());
+						maravilha.setQtdTijolos();
+						this.getPrefeitura().getPrincipal().mostrarMaravilha(maravilha.getQtdTijolos());
+						synchronized (maravilha) {
+							maravilha.notify();
+						}
 					} catch (InterruptedException e) {
-						this.getPrefeitura().getPrincipal().getVila().getMaravilha().removeConstrutor(this);
+						maravilha.removeConstrutor(this);
 						this.setStatus(Status.PARADO);
 						this.tipoConstrucao = "";
 						this.run();
@@ -267,6 +274,9 @@ public class Aldeao extends Thread {
 
 			break;
 		}
+		if (this.getPrefeitura().getPrincipal().getVila().getMaravilha() != null)
+			this.getPrefeitura().getPrincipal()
+					.mostrarMaravilha(this.getPrefeitura().getPrincipal().getVila().getMaravilha().getQtdTijolos());
 		this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
 		this.prefeitura.getPrincipal().mostrarComida(this.prefeitura.getUnidadesComida());
 		this.prefeitura.getPrincipal().mostrarOuro(this.prefeitura.getUnidadesOuro());
@@ -275,6 +285,7 @@ public class Aldeao extends Thread {
 	private Fazenda construirFazenda() {
 		Tela tela = this.prefeitura.getPrincipal();
 		if (this.prefeitura.getUnidadesComida() >= 100 && this.prefeitura.getUnidadesOuro() >= 500) {
+			System.out.println("Vai construir uma fazenda");
 			try {
 				Thread.sleep(3000);
 				this.prefeitura.addUnidadesComida(-100);
@@ -294,13 +305,14 @@ public class Aldeao extends Thread {
 			msg += 100 - this.prefeitura.getUnidadesComida() + " de comida";
 
 		else if (this.prefeitura.getUnidadesComida() >= 100 && this.prefeitura.getUnidadesOuro() < 500)
-			msg += 100 - this.prefeitura.getUnidadesOuro() + " de ouro";
+			msg += 500 - this.prefeitura.getUnidadesOuro() + " de ouro";
 
 		else
 			msg += (100 - this.prefeitura.getUnidadesComida()) + " de comida e "
-					+ (100 - this.prefeitura.getUnidadesOuro()) + " de ouro";
+					+ (500 - this.prefeitura.getUnidadesOuro()) + " de ouro";
 
 		this.prefeitura.getPrincipal().mostrarMensagemErro("Recursos insuficientes", "Você precisa de mais " + msg);
+
 		this.status = Status.PARADO;
 		this.tipoConstrucao = "";
 		return null;
@@ -371,13 +383,13 @@ public class Aldeao extends Thread {
 			}
 		} catch (InterruptedException e) {
 			this.setStatus(Status.PARADO);
-			this.prefeitura.getPrincipal().getVila().getTemplo().removeReligioso(this);
 			this.run();
 		}
 	}
 
 	public synchronized void parar() {
 		try {
+			System.out.println("O aldeão " + this.getNome() + " está parado");
 			this.wait();
 		} catch (InterruptedException e) {
 			this.setStatus(Status.PARADO);
