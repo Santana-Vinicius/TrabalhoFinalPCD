@@ -11,7 +11,7 @@ public class Prefeitura extends Thread {
 	private Integer oferendasFe;
 	private Tela tela;
 	private int nivelAldeoes;
-	private String tipoEvolucao;
+	private String fazendo;
 	private Boolean acabou = false;
 	private Boolean evoluiuAldeao;
 	private Boolean evoluiuFazendas;
@@ -32,7 +32,7 @@ public class Prefeitura extends Thread {
 		this.setEvoluiuAldeao(false);
 		this.setEvoluiuFazendas(false);
 		this.setEvoluiuMinas(false);
-		setTipoEvolucao("");
+		setFazendo("");
 	}
 
 	public void run() {
@@ -42,12 +42,16 @@ public class Prefeitura extends Thread {
 					this.wait();
 				}
 			} catch (InterruptedException e) {
+				acabou = true;
 			}
-			this.tela.mostrarComida(this.unidadesComida);
-			this.tela.mostrarOuro(this.unidadesOuro);
-			this.tela.mostrarOferendaFe(this.oferendasFe);
-			this.evoluir();
+			if (!acabou) {
+				this.tela.mostrarComida(this.unidadesComida);
+				this.tela.mostrarOuro(this.unidadesOuro);
+				this.tela.mostrarOferendaFe(this.oferendasFe);
+				this.fazer();
+			}
 		}
+		this.getPrincipal().getVila().encerrar();	
 	}
 
 	/*
@@ -95,12 +99,12 @@ public class Prefeitura extends Thread {
 		this.nivelAldeoes = nivelAldeoes;
 	}
 
-	public String getTipoEvolucao() {
-		return tipoEvolucao;
+	public String getFazendo() {
+		return fazendo;
 	}
 
-	public void setTipoEvolucao(String tipoEvolucao) {
-		this.tipoEvolucao = tipoEvolucao;
+	public void setFazendo(String fazendo) {
+		this.fazendo = fazendo;
 	}
 
 	public synchronized void addOferendasFe(Integer oferendasFe) {
@@ -139,31 +143,33 @@ public class Prefeitura extends Thread {
 	 * Criar aldeao
 	 */
 
-	public Aldeao criarAldeao() {
+	public void criarAldeao() {
 		if (this.unidadesComida >= 100) {
 			Boolean criado = false;
 			try {
+				this.tela.mostrarPrefeitura("Criando aldeão...", Color.GREEN);
 				this.addUnidadesComida(-100);
+				this.tela.mostrarComida(this.getUnidadesComida());
 				Thread.sleep(2000);
-				Aldeao novo = new Aldeao(String.valueOf(numAldeosCriados), this);
+				this.getPrincipal().getVila().addAldeao(new Aldeao(String.valueOf(numAldeosCriados), this));
 				numAldeosCriados++;
 				criado = true;
-				return novo;
+				this.tela.mostrarPrefeitura("Parada", Color.GRAY);
 			} catch (InterruptedException e) {
 				if (!criado) {
 					this.addUnidadesComida(100);
+					this.tela.mostrarComida(this.getUnidadesComida());
 				}
 				this.run();
+				this.tela.mostrarPrefeitura("Parada", Color.GRAY);
 			}
-		}
-		this.tela.mostrarMensagemErro("Recursos insuficientes",
-				"Você precisa de mais " + (100 - this.unidadesComida) + " de comida.");
-		return null;
-
+		} else
+			this.tela.mostrarMensagemErro("Recursos insuficientes",
+					"Você precisa de mais " + (100 - this.getUnidadesComida()) + " de comida.");
 	}
 
-	private void evoluir() {
-		switch (this.tipoEvolucao) {
+	private void fazer() {
+		switch (this.fazendo) {
 		case "Evolução de aldeão":
 			this.evoluirAldeao();
 			break;
@@ -173,7 +179,9 @@ public class Prefeitura extends Thread {
 		case "Evolução de mina de ouro":
 			this.evoluirMinaDeOuro();
 			break;
-
+		case "Criar aldeão":
+			this.criarAldeao();
+			break;
 		}
 	}
 
@@ -200,7 +208,7 @@ public class Prefeitura extends Thread {
 						this.tela.mostrarComida(this.getUnidadesComida());
 						this.tela.mostrarOuro(this.getUnidadesOuro());
 					}
-					this.setTipoEvolucao("");
+					this.setFazendo("");
 					this.run();
 					System.out.println("Parou evolução Aldeão");
 				}
@@ -223,7 +231,7 @@ public class Prefeitura extends Thread {
 		} else {
 			this.getPrincipal().mostrarMensagemErro("Erro", "Os aldeões já estão no nível máximo!");
 		}
-		this.setTipoEvolucao("");
+		this.setFazendo("");
 	}
 
 	public void evoluirFazenda() {
@@ -249,7 +257,7 @@ public class Prefeitura extends Thread {
 							this.tela.mostrarComida(this.getUnidadesComida());
 							this.tela.mostrarOuro(this.getUnidadesOuro());
 						}
-						this.setTipoEvolucao("");
+						this.setFazendo("");
 						this.run();
 						System.out.println("Parou evolução Fazenda");
 					}
@@ -273,7 +281,7 @@ public class Prefeitura extends Thread {
 			}
 		} else
 			this.getPrincipal().mostrarMensagemErro("Erro", "As fazendas já estão no nível máximo!");
-		this.setTipoEvolucao("");
+		this.setFazendo("");
 	}
 
 	public void evoluirMinaDeOuro() {
@@ -299,7 +307,7 @@ public class Prefeitura extends Thread {
 							this.tela.mostrarComida(this.getUnidadesComida());
 							this.tela.mostrarOuro(this.getUnidadesOuro());
 						}
-						this.setTipoEvolucao("");
+						this.setFazendo("");
 						this.run();
 						System.out.println("Parou evolução Mina de ouro");
 					}
@@ -324,7 +332,7 @@ public class Prefeitura extends Thread {
 		} else
 			this.getPrincipal().mostrarMensagemErro("Erro", "As minas de ouro já estão no nível máximo!");
 
-		this.setTipoEvolucao("");
+		this.setFazendo("");
 	}
 
 	public Boolean acabou() {

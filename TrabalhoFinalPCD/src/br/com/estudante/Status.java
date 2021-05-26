@@ -2,7 +2,7 @@ package br.com.estudante;
 
 public enum Status {
 	PARADO("Parado"), CONSTRUINDO("Construindo"), CULTIVANDO("Cultivando"), MINERANDO("Minerando"), ORANDO("Orando"),
-	SACRIFICADO("Sacrificado"), MORTO("Morto");
+	SACRIFICADO("Sacrificado"), MORTO("Morto"), ENCERRADO("Encerrado");
 
 	private String description;
 

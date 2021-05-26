@@ -1,5 +1,6 @@
 package br.com.estudante;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -30,11 +31,13 @@ public class Templo extends Thread {
 					this.wait();
 				}
 			} catch (InterruptedException e) {
+				acabou = true;
 			}
-
-			this.tela.mostrarOferendaFe(this.tela.getVila().getPrefeitura().getOferendasFe());
-			if (this.getTipoEvolucao() != "") {
-				this.evoluir();
+			if (!acabou) {
+				this.tela.mostrarOferendaFe(this.tela.getVila().getPrefeitura().getOferendasFe());
+				if (this.getTipoEvolucao() != "") {
+					this.evoluir();
+				}
 			}
 		}
 	}
@@ -161,12 +164,24 @@ public class Templo extends Thread {
 	private synchronized void evoluirProtecaoGafanhotos(int oferendasFe) {
 		if (oferendasFe >= 5000) {
 			if (!this.getPrincipal().getVila().isProtecaoGafanhotos()) {
+				Boolean evoluiu = false;
 				try {
-					Thread.sleep(2500);
+					this.getPrincipal().mostrarTemplo("Evoluindo Prot. Gafanhotos", Color.GREEN);
 					this.getPrincipal().getVila().getPrefeitura().addOferendasFe(-5000);
+					this.getPrincipal()
+							.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					Thread.sleep(500 * 500);
 					this.getPrincipal().getVila().setProtecaoGafanhotos(true);
+					evoluiu = true;
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 				} catch (InterruptedException e) {
+					if (!evoluiu) {
+						this.getPrincipal().getVila().getPrefeitura().addOferendasFe(5000);
+						this.getPrincipal()
+								.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					}
 					this.setTipoEvolucao("");
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 					this.run();
 				}
 			} else {
@@ -183,12 +198,24 @@ public class Templo extends Thread {
 	private synchronized void evoluirProtecaoPrimogenitos(int oferendasFe) {
 		if (oferendasFe >= 6000) {
 			if (!this.getPrincipal().getVila().isProtecaoPrimogenitos()) {
+				Boolean evoluiu = false;
 				try {
-					Thread.sleep(2500);
+					this.getPrincipal().mostrarTemplo("Evoluindo Prot. Primogênitos", Color.GREEN);
 					this.getPrincipal().getVila().getPrefeitura().addOferendasFe(-6000);
+					this.getPrincipal()
+							.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					Thread.sleep(600 * 500);
 					this.getPrincipal().getVila().setProtecaoPrimogenitos(true);
+					evoluiu = true;
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 				} catch (InterruptedException e) {
+					if (!evoluiu) {
+						this.getPrincipal().getVila().getPrefeitura().addOferendasFe(6000);
+						this.getPrincipal()
+								.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					}
 					this.setTipoEvolucao("");
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 					this.run();
 				}
 			} else {
@@ -205,12 +232,24 @@ public class Templo extends Thread {
 	private synchronized void evoluirProtecaoPedras(int oferendasFe) {
 		if (oferendasFe >= 7000) {
 			if (!this.getPrincipal().getVila().isProtecaoPedras()) {
+				Boolean evoluiu = false;
 				try {
-					Thread.sleep(2500);
+					this.getPrincipal().mostrarTemplo("Evoluindo Prot. Chuva de Pedras", Color.GREEN);
 					this.getPrincipal().getVila().getPrefeitura().addOferendasFe(-7000);
+					this.getPrincipal()
+							.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					Thread.sleep(700 * 500);
 					this.getPrincipal().getVila().setProtecaoPedras(true);
+					evoluiu = true;
+					this.getPrincipal().mostrarTemplo("Parada", Color.GRAY);
 				} catch (InterruptedException e) {
+					if (!evoluiu) {
+						this.getPrincipal().getVila().getPrefeitura().addOferendasFe(7000);
+						this.getPrincipal()
+								.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					}
 					this.setTipoEvolucao("");
+					this.getPrincipal().mostrarTemplo("Parada", Color.GRAY);
 					this.run();
 				}
 			} else {
@@ -226,13 +265,25 @@ public class Templo extends Thread {
 	public synchronized void evoluirNuvemGafanhoto(int oferendasFe) {
 		if (oferendasFe >= 1000) {
 			if (!this.ataques.contains("Nuvem de gafanhotos")) {
+				Boolean evoluiu = false;
 				try {
-					Thread.sleep(2500);
+					this.getPrincipal().mostrarTemplo("Evoluindo Nuvem de Gafanhotos", Color.GREEN);
 					this.getPrincipal().getVila().getPrefeitura().addOferendasFe(-1000);
+					this.getPrincipal()
+							.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					Thread.sleep(50 * 500);
 					this.setAtaques("Nuvem de gafanhotos");
 					this.getPrincipal().mostrarAtaques(this.ataques);
+					evoluiu = true;
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 				} catch (InterruptedException e) {
+					if (!evoluiu) {
+						this.getPrincipal().getVila().getPrefeitura().addOferendasFe(1000);
+						this.getPrincipal()
+								.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					}
 					this.setTipoEvolucao("");
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 					this.run();
 				}
 			} else {
@@ -248,13 +299,25 @@ public class Templo extends Thread {
 	private synchronized void evoluirMortePrimogenito(int oferendasFe) {
 		if (oferendasFe >= 1500) {
 			if (!this.ataques.contains("Morte dos primogênitos")) {
+				Boolean evoluiu = false;
 				try {
-					Thread.sleep(2500);
+					this.getPrincipal().mostrarTemplo("Evoluindo Morte dos Primogênitos", Color.GREEN);
 					this.getPrincipal().getVila().getPrefeitura().addOferendasFe(-1500);
+					this.getPrincipal()
+							.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					Thread.sleep(100 * 500);
 					this.setAtaques("Morte dos primogênitos");
 					this.getPrincipal().mostrarAtaques(this.ataques);
+					evoluiu = true;
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 				} catch (InterruptedException e) {
+					if (!evoluiu) {
+						this.getPrincipal().getVila().getPrefeitura().addOferendasFe(1500);
+						this.getPrincipal()
+								.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					}
 					this.setTipoEvolucao("");
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 					this.run();
 				}
 			} else {
@@ -270,13 +333,25 @@ public class Templo extends Thread {
 	private synchronized void evoluirChuvaPedras(int oferendasFe) {
 		if (oferendasFe >= 2000) {
 			if (!this.ataques.contains("Chuva de pedras")) {
+				Boolean evoluiu = false;
 				try {
-					Thread.sleep(2500);
+					this.getPrincipal().mostrarTemplo("Evoluindo Chuva de Pedras", Color.GREEN);
 					this.getPrincipal().getVila().getPrefeitura().addOferendasFe(-2000);
+					this.getPrincipal()
+							.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					Thread.sleep(200 * 500);
 					this.setAtaques("Chuva de pedras");
 					this.getPrincipal().mostrarAtaques(this.ataques);
+					evoluiu = true;
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 				} catch (InterruptedException e) {
+					if (!evoluiu) {
+						this.getPrincipal().getVila().getPrefeitura().addOferendasFe(2000);
+						this.getPrincipal()
+								.mostrarOferendaFe(this.getPrincipal().getVila().getPrefeitura().getOferendasFe());
+					}
 					this.setTipoEvolucao("");
+					this.getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 					this.run();
 				}
 			} else {

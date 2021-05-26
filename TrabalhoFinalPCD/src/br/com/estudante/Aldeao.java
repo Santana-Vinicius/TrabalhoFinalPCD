@@ -31,7 +31,7 @@ public class Aldeao extends Thread {
 	 */
 	@Override
 	public void run() {
-		while (this.status != Status.SACRIFICADO && this.status != Status.MORTO) {
+		while (this.status != Status.SACRIFICADO && this.status != Status.MORTO && this.status != Status.ENCERRADO) {
 			this.getPrefeitura().getPrincipal().mostrarAldeao(Integer.valueOf(this.getNome()), this.getStatus());
 			switch (this.status.toString()) {
 			case "Cultivando":
@@ -51,7 +51,8 @@ public class Aldeao extends Thread {
 				break;
 			}
 		}
-		this.prefeitura.getPrincipal().mostrarAldeao(Integer.valueOf(this.nome), this.status.toString());
+		if (this.status != Status.ENCERRADO)
+			this.prefeitura.getPrincipal().mostrarAldeao(Integer.valueOf(this.nome), this.status.toString());
 	}
 
 	/*
@@ -210,8 +211,8 @@ public class Aldeao extends Thread {
 		case "Templo":
 			Templo templo = construirTemplo();
 			if (templo != null) {
-				this.getPrefeitura().getPrincipal().mostrarTemplo(templo.getNome(), Color.GRAY);
 				this.getPrefeitura().getPrincipal().habilitarTemplo();
+				this.getPrefeitura().getPrincipal().mostrarTemplo("Parado", Color.GRAY);
 				vila.setTemplo(templo);
 			}
 			this.status = Status.PARADO;

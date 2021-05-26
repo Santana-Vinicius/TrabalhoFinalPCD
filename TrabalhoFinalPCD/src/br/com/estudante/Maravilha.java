@@ -8,6 +8,7 @@ public class Maravilha extends Thread {
 	private ArrayList<Aldeao> construtores = new ArrayList<Aldeao>();
 	private Prefeitura prefeitura;
 	private Tela tela;
+	private Boolean desconectou = false;
 	private int qtdTijolos = 0;
 
 	Maravilha(Prefeitura prefeitura, Tela tela) {
@@ -16,18 +17,21 @@ public class Maravilha extends Thread {
 	}
 
 	public void run() {
-		while (this.getQtdTijolos() != 100000) {
-				try {
-					synchronized (this) {
-						this.wait();
-					}
-				} catch (InterruptedException e) {
-					
+		while (this.getQtdTijolos() != 100000 && !desconectou) {
+			try {
+				synchronized (this) {
+					this.wait();
 				}
+			} catch (InterruptedException e) {
+				desconectou = true;
+			}
 			this.tela.mostrarMaravilha(this.qtdTijolos);
 		}
-		this.tela.mostrarMaravilha(this.qtdTijolos);
-		this.tela.getClienteTCP().vencer();
+		if (!desconectou) {
+			this.tela.mostrarMaravilha(this.qtdTijolos);
+			this.tela.getClienteTCP().vencer();
+		}
+
 	}
 
 	public int getQtdConstrutores() {

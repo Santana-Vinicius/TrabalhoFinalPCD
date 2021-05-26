@@ -29,6 +29,9 @@ public class ServidorTCP extends Thread {
 			@SuppressWarnings("resource")
 			ServerSocket servidor = new ServerSocket(12345);
 			while (true) {
+				System.out.println("====Main Server=====");
+				System.out.println("Qtd jogadores: " + jogadores.size());
+				System.out.println("Qtd saidas: " + saidas.size());
 				Socket conexao = servidor.accept();
 				(new ServidorTCP(conexao, saidas, jogadores)).start();
 			}
@@ -240,28 +243,35 @@ public class ServidorTCP extends Thread {
 					if (saidaJogador.equals(saida))
 						break;
 				}
-
 				saidas.remove(saida);
 			}
+			System.out.println("i = " + i);
+			System.out.println("Qtd jogadores no servidor = " + this.jogadores.size());
 
-			if (this.jogadores.size() > 0 && i > -1) {
+			if (this.saidas.size() > 0 && i > -1) {
 				Jogador jogadorDesc = this.jogadores.get(i);
+				System.out.println("Jogador " + jogadorDesc.getNome() + " selecionado");
 				try {
 					if (jogadores.get(0).equals(jogadorDesc)) {
-						for (int j = this.saidas.size() - 1; j > 0; j--) {
+						System.out.println("Host está saindo sem desconectar");
+						int j = 0;
+						for (ObjectOutputStream saidaAux : this.saidas) {
 							System.out.println("Manda Fechar para a saída " + j);
-							saidas.get(j).writeObject("Fechar");
-							saidas.get(j).close();
+							saidaAux.writeObject("Fechar");
 							System.out.println("Saída " + j + " fechada");
+							saidaAux.close();
+							j++;
 						}
-						System.out.println("Manda Fechar para o host ");
-						saida.writeObject("Fechar");
-						this.saidas.removeAll(saidas);
-						System.out.println("Zera a lista de saidas");
-						this.jogadores.removeAll(jogadores);
-						System.out.println("Zera a lista de jogadores");
-						this.saidas = new ArrayList<ObjectOutputStream>();
-						this.jogadores = new ArrayList<Jogador>();
+//						for (ObjectOutputStream saidaAux : this.saidas)
+						this.saidas.removeAll(this.saidas);
+//						System.out.println("Zera a lista de saidas");
+						this.jogadores.removeAll(this.jogadores);
+//						System.out.println("Zera a lista de jogadores");
+//						this.saidas = new ArrayList<ObjectOutputStream>();
+//						this.jogadores = null;
+//						this.jogadores = new ArrayList<Jogador>();
+						System.out.println("Tamanho saidas: " + this.saidas.size());
+						System.out.println("Tamanho jogadores: " + this.jogadores.size());
 					} else {
 						this.jogadores.remove(jogadorDesc);
 						for (ObjectOutputStream jogador : this.saidas) {
@@ -269,7 +279,6 @@ public class ServidorTCP extends Thread {
 							jogador.writeObject("Remover jogador");
 							System.out.println("Manda jogador desconectado");
 							jogador.writeObject(jogadorDesc);
-							i++;
 						}
 					}
 				} catch (IOException e1) {
@@ -280,11 +289,12 @@ public class ServidorTCP extends Thread {
 			try {
 				saida.close();
 				conexao.close();
+				System.out.println("Conexão fechada");
 			} catch (IOException e1) {
 
 			}
 
-			System.out.println("Comunicação com o cliente falhou...");
+			System.out.println("Comunicação com o cliente terminou.");
 		} catch (ClassNotFoundException e) {
 			System.out.println("Conversão deu erro...");
 		}

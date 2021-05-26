@@ -64,6 +64,17 @@ public class Vila {
 				+ prefeitura.getUnidadesOuro() + "\n";
 	}
 
+	public void encerrar() {
+		for (Aldeao aldeao : aldeoes) {
+			aldeao.setStatus(Status.ENCERRADO);
+		}
+		Templo templo = this.getTemplo();
+		if (templo != null) {
+			templo.setAcabou(true);
+			templo.interrupt();
+		}
+	}
+
 	/*
 	 * Getters and Setters
 	 */

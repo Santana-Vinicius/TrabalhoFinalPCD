@@ -50,6 +50,7 @@ public class ClienteTCP extends Thread {
 			while (this.escutando) {
 				System.out.println("Esperando o que fazer");
 				String fazer = (String) entrada.readObject();
+				System.out.println(this.jogador.getNome() + " está indo " + fazer);
 				if (fazer.equals("Adicionar jogador")) {
 					System.out.println("Esperando alguém");
 					jogadorAux = (Jogador) entrada.readObject();
@@ -375,6 +376,8 @@ public class ClienteTCP extends Thread {
 		this.cliente.limparInimigos();
 		this.cliente.setSituacaoInicio(SituacaoInicio.INICIAL_CRIAR);
 		this.cliente.habilitarInicio();
+		this.cliente.getVila().getPrefeitura().setAcabou(true);
+		this.cliente.getVila().getPrefeitura().interrupt();
 		System.out.println("Thread " + this.jogador.getNome() + " morreu");
 	}
 

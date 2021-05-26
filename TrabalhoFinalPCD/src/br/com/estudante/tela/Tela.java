@@ -1305,28 +1305,32 @@ public class Tela extends JFrame {
 					|| novoSacrificado.getStatus().equals(Status.MORTO.getDescription())) {
 				this.mostrarMensagemErro("Erro", "Aldeão já foi sacrificado");
 			} else {
-				if (novoSacrificado.getStatus().equals(Status.ORANDO.getDescription())) {
-					novoSacrificado.interrupt();
-					int oferendaGerada = this.getVila().getTemplo().Sacrificar(novoSacrificado);
-					this.getVila().getPrefeitura().addOferendasFe(oferendaGerada);
-					this.mostrarOferendaFe(this.getVila().getPrefeitura().getOferendasFe());
-					novoSacrificado.setStatus(Status.SACRIFICADO);
-					this.mostrarAldeao(aldeao, novoSacrificado.getStatus());
-				} else
-					this.mostrarMensagemErro("Erro", "Somente aldeões religiosos podem ser sacrificados");
+				if (this.getVila().getQtdAldeoes() > 1) {
+					if (novoSacrificado.getStatus().equals(Status.ORANDO.getDescription())) {
+						novoSacrificado.interrupt();
+						int oferendaGerada = this.getVila().getTemplo().Sacrificar(novoSacrificado);
+						this.getVila().getPrefeitura().addOferendasFe(oferendaGerada);
+						this.mostrarOferendaFe(this.getVila().getPrefeitura().getOferendasFe());
+						novoSacrificado.setStatus(Status.SACRIFICADO);
+						this.mostrarAldeao(aldeao, novoSacrificado.getStatus());
+					} else
+						this.mostrarMensagemErro("Erro", "Somente aldeões religiosos podem ser sacrificados");
+				} else {
+					this.mostrarMensagemErro("Erro", "Você deve ter pelo menos um aldeão vivo na sua vila!");
+				}
 			}
-			System.out.println("Status 4: " + novoSacrificado.getStatus());
 		}
 	}
 
 	public void comandoPrefeituraCriarAldeao() {
-		Aldeao novo = this.vila.getPrefeitura().criarAldeao();
-		if (novo != null)
-			this.vila.addAldeao(novo);
+		this.getVila().getPrefeitura().setFazendo("Criar aldeão");
+		synchronized (this.getVila().getPrefeitura()) {
+			this.getVila().getPrefeitura().notify();
+		}
 	}
 
 	public void comandoPrefeituraEvoluir(String strEvolucao) {
-		this.getVila().getPrefeitura().setTipoEvolucao(strEvolucao);
+		this.getVila().getPrefeitura().setFazendo(strEvolucao);
 		synchronized (this.getVila().getPrefeitura()) {
 			this.getVila().getPrefeitura().notify();
 		}
