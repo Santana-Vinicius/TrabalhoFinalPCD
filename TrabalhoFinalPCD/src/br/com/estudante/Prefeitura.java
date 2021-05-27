@@ -21,8 +21,8 @@ public class Prefeitura extends Thread {
 	 * Constructor
 	 */
 	public Prefeitura(Tela tela) {
-		this.unidadesComida = Integer.valueOf(15000);
-		this.unidadesOuro = Integer.valueOf(10000);
+		this.unidadesComida = Integer.valueOf(150);
+		this.unidadesOuro = Integer.valueOf(100);
 		this.oferendasFe = Integer.valueOf(0);
 		this.tela = tela;
 		this.tela.mostrarComida(this.unidadesComida);
