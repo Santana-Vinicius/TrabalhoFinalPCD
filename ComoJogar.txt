@@ -1,0 +1,71 @@
+Alunos:
+Vinicius Araujo Santana UC19106211
+Gabriel Souza de Araujo UC19106210
+
+Como jogar:
+Uma vez que o jogo foi inicializado de forma correta, agora precisamos de alguns para
+poder jogar. Inicialmente será escolhido um jogador para criar uma partida, este jogador será o
+nosso Host. A partir do momento em que o Host criar um novo jogo, outros jogadores poderão
+se juntar a essa sessão. Para se juntar ao jogo, basta informar o nome do jogador e digitar
+“localhost" no conectar-se a. Feito isso, a tabela de jogadores será atualizada e irá mostrar os
+jogadores presentes na sessão até o momento.
+Uma vez que novos jogadores entrem no jogo, eles serão mostrados na tabela de
+jogadores de todos os players e uma mensagem no chat informará sua chegada.
+Todos ficam aguardando até que o host inicialize o jogo, antes disso ninguém tem acesso
+as vilas e o máximos que eles podem fazer além de esperar e se desconectar é se comunicar
+pelo chat de mensagens.
+Vale lembrar que a implementação só permite que uma partida seja criada ao mesmo
+tempo. Então caso deseje inicializar outra partida, encerre a atual e comece uma nova. Outro
+ponto importante é que se o host se desconectar, todos os jogadores se desconectarão
+automaticamente.
+Quando o jogo é iniciado, os jogadores passam a ter também acesso as suas respectivas
+vilas. Seu objetivo é construir a maravilha antes dos outros jogadores para assim, encaminhar sua
+civilização ao triunfo e vencer a partida.
+Os jogadores podem construir fazendas e minas, para poder coletar mais recursos.
+Podem construir um templo onde os aldeões irão orar para gerar oferendas de fé que
+posteriormente serão usadas para criar proteções contra ataques e até desbloquear ataques.
+A partir do momento que o jogador já acumulou oferendas suficiente para desbloquear os
+ataques, ele pode direcionar esse ataque para algum dos jogadores presentes na sala, menos pra
+ele próprio (obviamente). Cada ataque tem um efeito colateral, então vamos cita-los aqui:
+Nuvem de gafanhotos: destrói metade das fazendas inimigas.
+Morte dos primogênitos: mata metade dos aldeões inimigos.
+Chuva de pedras: mata metade dos aldeões, destrói metade das fazendas, metade das
+minas e metade da maravilha inimiga.
+Vale lembrar que uma vez evoluída a proteção contra esses ataques, eles passam a não
+ter efeito nenhum sobre a sua vila.
+Também é permito ao jogador que crie outros aldeões para diversificar a distribuição e
+alcançar seus objetivos. Mas claro, como tudo na vida, todas essas possíveis melhorias e/ou
+construções tem um custo e um tempo de preparo, listemos eles a seguir:
+Obs: cada hora no jogo dura 500 milissegundos
+Aldeão: 100 unidades de comida e 20 horas pra ficar pronto.
+Fazenda: 100 unidades de comida + 500 unidades de outro e 30 horas para ficar pronto.
+Precisa de apenas um construtor. Comporta no máximo 5 aldeões fazendeiros simultaneamente
+Mina de outro: 1000 unidades de outro e 40 horas para ficar pronto. Precisa de apenas
+um construtor. Comporta no máximo 5 aldeões mineradores ao mesmo tempo.
+Templo: 2000 unidades de comida + 2000 unidades de outro e 100 horas para ficar
+pronto. Precisa de apenas um construtor. Comporta ilimitados aldeões simultaneamente.
+Maravilha: Tem um custo de 100000 tijolos. Cada tijolo custa 1 unidade de comida + 1
+unidade de ouro. Pode possuir ilimitados construtores simultaneamente.
+A produção inicial dos aldeãos nas construções é pré configurada, mas a medida que os
+aldeões são evoluídos, o tempo de transporte até a prefeitura diminui e a produção de unidades
+aumenta em 2x no mesmo intervalo de tempo para mina e para a fazenda.
+Também é possível evoluir suas fazendas e minas uma vez, para assim permitir 10
+aldeões fazendeiros e mineradores ao mesmo tempo.
+Se por ventura o jogador tentar atacar um jogador que já possui as proteções contra as
+pragas lançadas, o valor de lançar um ataque será descontado do atacante porém não surtirá
+nenhum efeito no defensor.
+A produção do aldeão fazendeiro inicialmente é: 10 unidades de comida a cada 1 hora + 2
+horas para transporte até a prefeitura.
+A produção do aldeão minerador incialmente é: 5 unidades de ouro a cada 2 horas + 3
+horas para transporte até a prefeitura.
+Aldeões religiosos produzem 2 unidades de oferendas de fé a cada 5 horas.
+Caso você decida sacrificar um aldeão religioso, isso acrescentará 100 unidades de
+oferendas de fie imediatamente ao seu cofre.
+
+Os botões para cultivar, plantar e construir são semelhantes.
+A ideia é, no caso de construir é, escolha um aldeao e na aba inferior no construir defina
+qual será o tipo de construção que ele irá realizar.
+Para cultivar ou minerar, basta que você selecione um aldeao, informe o número da fazenda
+ou mina que deseja mandar o aldeão e está feito.
+A lógica é parecida para o orar, a diferença é que só possuimos um templo, portanto não há necessidade de 
+informar qual será o templo.

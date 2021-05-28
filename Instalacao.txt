@@ -1,0 +1,20 @@
+Disciplina: Programação Concorrente e Distribuido
+Alunos:
+Vinicius Araujo Santana UC19106211
+Gabriel Souza de Araujo UC19106210
+Como instalar este projeto:
+- Após fazer o download do projeto, descompacte-o em alguma pasta ou na Área de
+trabalho mesmo.
+- Abra o Eclipse, selecione o seu workspace padrão.
+- Vá na opção File, escolha Import, e irá aparecer uma janela para você escolher o tipo de
+arquivo que deseja.
+-Escolha a opção General -> Project from folder or Archive, para escolher um projeto de
+uma pasta e busque pelo diretório onde você salvou o projeto descompacto.
+-Após isso o projeto estará disponível no seu workspace e você poderá executá-lo sem
+mais problemas.
+Como executar:
+Nós criamos o servidor como uma especie de aplicação externa, portanto é necessário
+que antes de executar a classe Tela, você execute a classe ServidorTCP para subir uma
+instancia do servidor.
+Uma vez que o ServidorTCP foi inicializado, basta executar a classe Tela quantas vezes
+quiser, para simular jogadores, e o jogo está pronto para dar seus primeiros passos.
